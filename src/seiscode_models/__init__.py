@@ -20,10 +20,12 @@ from .utils.io import (
     load_model
 )
 from .utils.visualization import quick_view
+from .core import VelocityModel
 
 __version__ = "0.1.0"
 
 __all__ = [
+    "VelocityModel",
     "gradient_background",
     "add_gaussian_anomaly",
     "add_fault_offset",
