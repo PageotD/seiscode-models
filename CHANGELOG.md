@@ -12,3 +12,4 @@ and this project adheres to Semantic Versioning.
 - Support for precision selection (`f32` / `f64`) in model generation (Phase 0).
 - Core velocity primitives and validation with f32/f64 support (Phase 1).
 - Model export functions for seismic solvers (Pahse 2).
+- Object-oriented interface for 2D subsurface velocity models (Phase 3).
