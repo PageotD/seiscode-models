@@ -6,7 +6,7 @@ from .validation import validate_model
 
 def export_model(
     v: np.ndarray, 
-    filepath: str | Path, 
+    filepath: Union[str, Path], 
     format: str = "bin", 
     dx: float = 1.0, 
     dz: float = 1.0
