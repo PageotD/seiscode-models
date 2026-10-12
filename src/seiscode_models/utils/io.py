@@ -1,7 +1,7 @@
 """Input/Output utilities for exporting velocity models to seismic solvers."""
 from pathlib import Path
 import numpy as np
-from typing import Union
+from typing import Union, Tuple
 from .validation import validate_model
 
 def export_model(
@@ -40,7 +40,7 @@ def export_model(
     else:
         raise ValueError(f"Unsupported export format: '{format}'. Use 'bin', 'raw', or 'npy'.")
 
-def load_model(filepath: Union[str, Path], shape: tuple[int, int], dtype=np.float32) -> np.ndarray:
+def load_model(filepath: Union[str, Path], shape: Tuple[int, int], dtype=np.float32) -> np.ndarray:
     """Load a velocity model from a raw binary file.
 
     Parameters
