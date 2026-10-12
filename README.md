@@ -1,1 +1,1 @@
-# seiscode-models
+# SeisCode Models

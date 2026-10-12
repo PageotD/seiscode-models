@@ -1,0 +1,12 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to Semantic Versioning.
+
+## [Unreleased]
+
+### Added
+- Initial project setup, folder structure, and CI/CD pipelines (Phase 0).
+- Support for precision selection (`f32` / `f64`) in model generation.
