@@ -19,6 +19,7 @@ from .utils.io import (
     export_model,
     load_model
 )
+from .utils.visualization import quick_view
 
 __version__ = "0.1.0"
 
@@ -36,5 +37,6 @@ __all__ = [
     "low_velocity_layer",
     "heterogeneous_anomaly_model",
     "export_model",
-    "load_model"
+    "load_model",
+    "quick_view"
 ]
