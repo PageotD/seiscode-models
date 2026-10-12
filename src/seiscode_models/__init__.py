@@ -15,6 +15,10 @@ from .models.geological import (
 )
 from .utils.dtypes import parse_dtype
 from .utils.validation import validate_model
+from .utils.io import (
+    export_model,
+    load_model
+)
 
 __version__ = "0.1.0"
 
@@ -30,5 +34,7 @@ __all__ = [
     "checkerboard",
     "salt_dome",
     "low_velocity_layer",
-    "heterogeneous_anomaly_model"
+    "heterogeneous_anomaly_model",
+    "export_model",
+    "load_model"
 ]
