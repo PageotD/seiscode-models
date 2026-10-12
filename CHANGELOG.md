@@ -9,5 +9,6 @@ and this project adheres to Semantic Versioning.
 
 ### Added
 - Initial project setup, folder structure, and CI/CD pipelines (Phase 0).
-- Support for precision selection (`f32` / `f64`) in model generation.
-- Core velocity primitives and validation with f32/f64 support
+- Support for precision selection (`f32` / `f64`) in model generation (Phase 0).
+- Core velocity primitives and validation with f32/f64 support (Phase 1).
+- Model export functions for seismic solvers (Pahse 2).
