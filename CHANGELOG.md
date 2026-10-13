@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to Semantic Versioning.
 
-## [x.y.z] YYYY-MM-DD
+## [0.3.0] 2026-10-13
 
 ### Added
 - `core`: Add `load` and `copy` methods
