@@ -1,8 +1,10 @@
 """Tests for the object-oriented VelocityModel interface."""
 import numpy as np
 import pytest
+
 import seiscode_models as sm
 from seiscode_models.core import VelocityModel
+
 
 class TestVelocityModelOOP:
     def test_factory_and_properties(self):

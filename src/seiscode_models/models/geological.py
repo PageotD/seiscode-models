@@ -1,8 +1,9 @@
 """Geological velocity models supporting f32/f64 precision."""
 
 import numpy as np
-from .primitives import gradient_background, add_gaussian_anomaly, add_fault_offset
+
 from ..utils.dtypes import parse_dtype
+from .primitives import add_fault_offset, add_gaussian_anomaly, gradient_background
 
 
 def dipping_layers(

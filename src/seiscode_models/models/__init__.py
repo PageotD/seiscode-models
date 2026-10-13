@@ -1,6 +1,7 @@
 """Primitive building blocks for subsurface velocity models with dtype support."""
 
 import numpy as np
+
 from ..utils.dtypes import parse_dtype
 
 

@@ -1,26 +1,26 @@
 """Object-oriented interface for 2D subsurface velocity models."""
 
 from pathlib import Path
-from typing import Union, Tuple, Optional
+from typing import Optional, Tuple, Union
+
 import numpy as np
 
-from .models.primitives import (
-    gradient_background,
-    add_gaussian_anomaly,
-    add_fault_offset,
-)
 from .models.geological import (
-    dipping_layers,
-    sinusoidal_interface,
-    faulted_layers,
     checkerboard,
-    salt_dome,
-    low_velocity_layer,
+    dipping_layers,
+    faulted_layers,
     heterogeneous_anomaly_model,
+    low_velocity_layer,
+    salt_dome,
+    sinusoidal_interface,
 )
-from .utils.dtypes import parse_dtype
-from .utils.validation import validate_model
+from .models.primitives import (
+    add_fault_offset,
+    add_gaussian_anomaly,
+    gradient_background,
+)
 from .utils.io import export_model
+from .utils.validation import validate_model
 from .utils.visualization import quick_view
 
 

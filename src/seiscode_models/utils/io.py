@@ -1,8 +1,10 @@
 """Input/Output utilities for exporting velocity models to seismic solvers."""
 
 from pathlib import Path
+from typing import Tuple, Union
+
 import numpy as np
-from typing import Union, Tuple
+
 from .validation import validate_model
 
 

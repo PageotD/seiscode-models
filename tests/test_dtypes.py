@@ -1,7 +1,9 @@
 """Tests for precision dtype utilities."""
 import numpy as np
 import pytest
+
 from seiscode_models.utils.dtypes import parse_dtype
+
 
 class TestParseDtype:
     def test_default_dtype(self):

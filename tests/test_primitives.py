@@ -1,7 +1,9 @@
 """Tests for primitive functions and dtype preservation."""
 import numpy as np
 import pytest
+
 import seiscode_models as sm
+
 
 class TestGradientBackground:
     def test_shape_and_dtype(self):

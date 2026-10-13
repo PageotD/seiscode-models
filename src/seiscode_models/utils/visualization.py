@@ -1,6 +1,7 @@
 """Visualization utilities compatible with Python 3.8+."""
 
 import numpy as np
+
 from .validation import validate_model
 
 
