@@ -22,7 +22,16 @@ from .utils.io import (
 from .utils.visualization import quick_view
 from .core import VelocityModel
 
-__version__ = "0.1.0"
+try:
+    from importlib.metadata import version, PackageNotFoundError
+except ImportError: # Python3.8
+    from importlib_metadata import version, PackageNotFoundError
+
+try:
+    __version__ = version("seiscode-models")
+except PackageNotFoundError:
+    raise RuntimeError("seiscode-models package is not installed. Please install it to use this module.")
+
 
 __all__ = [
     "VelocityModel",
