@@ -4,21 +4,18 @@ from .primitives import gradient_background, add_gaussian_anomaly, add_fault_off
 from ..utils.dtypes import parse_dtype
 
 def dipping_layers(nx: int = 201, nz: int = 51, dx: float = 1.0, dz: float = 1.0,
-                   v: tuple = (1800.0, 2400.0, 3200.0, 4200.0), dip_deg: float = 8.0, dtype=np.float32) -> np.ndarray:
+                   v: tuple = (1800.0, 2400.0, 3200.0, 4200.0), dip_deg: float = 8.0, thickness: float = 10.0, dtype=np.float32) -> np.ndarray:
     """Generate dipping planar layers with the same dip angle."""
     dt = parse_dtype(dtype)
     v_arr = np.asarray(v, dtype=dt)
     x = np.arange(nx, dtype=dt) * dx
-    dip = np.deg2rad(dip_deg)
+    dip = np.tan(np.deg2rad(dip_deg))
+    depths = np.cumsum(np.arange(1, v_arr.size) * thickness).astype(dt)
+    k_int = np.clip(((depths[:, None] + (x - x.mean()) * dip) / dz).astype(int), 0, nz - 1)
     v_out = np.full((nx, nz), v_arr[-1], dtype=dt)
-    depths = [0.0]
-    for k in range(1, len(v_arr)):
-        depths.append(depths[-1] + 10.0 * k)
-    for k in range(len(v_arr) - 2, -1, -1):
-        z_int = depths[k] + (x - x.mean()) * np.tan(dip)
-        k_int = np.clip((z_int / dz).astype(int), 0, nz - 1)
-        for i in range(nx):
-            v_out[i, :k_int[i]] = v_arr[k]
+    for k in range(v_arr.size - 2, -1, -1):
+        mask = np.arange(nz)[None, :] < k_int[k][:, None]  # (nx, nz)
+        v_out = np.where(mask, v_arr[k], v_out).astype(dt)
     return v_out
 
 def sinusoidal_interface(nx: int = 201, nz: int = 51, period: float = 100.0, amplitude: float = 8.0,
@@ -27,21 +24,22 @@ def sinusoidal_interface(nx: int = 201, nz: int = 51, period: float = 100.0, amp
     dt = parse_dtype(dtype)
     x = np.arange(nx, dtype=dt)
     z_int = nz * 0.45 + amplitude * np.sin(2 * np.pi * x / period)
-    k_int = z_int.astype(int)
+    k_int = np.clip(z_int.astype(int), 0, nz)
     v = np.full((nx, nz), v_bottom, dtype=dt)
-    for i in range(nx):
-        v[i, :k_int[i]] = v_top
+    v[k_int[:, None] > np.arange(nz)[None, :]] = v_top
     return v
 
 def faulted_layers(nx: int = 201, nz: int = 51, ix_fault: int = 120, throw: int = 8,
                    v: tuple = (1800.0, 2400.0, 3200.0, 4200.0), dtype=np.float32) -> np.ndarray:
     """Generate stratigraphic layers with a normal fault."""
     dt = parse_dtype(dtype)
-    base = np.zeros((nx, nz), dtype=dt)
-    bounds = [0, 12, 28, 40, nz]
     vs = np.asarray(v, dtype=dt)
-    for k in range(4):
-        base[:, bounds[k]:bounds[k + 1]] = vs[k]
+    if vs.ndim != 1 or vs.size < 2:
+        raise ValueError(f"'v' must be a 1D sequence of >= 2 velocities, got {v}.")
+    edges = np.linspace(0, nz, vs.size+1).astype(int)
+    base = np.full((nx, nz), vs[-1], dtype=dt)
+    for k in range(vs.size - 1):
+        base[:, edges[k]:edges[k + 1]] = vs[k]
     return add_fault_offset(base, ix_fault, throw).astype(dt)
 
 def checkerboard(nx: int = 201, nz: int = 51, cell: int = 20, v0: float = 3000.0,
