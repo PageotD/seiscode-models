@@ -7,6 +7,11 @@ and this project adheres to Semantic Versioning.
 
 ## [x.y.z] YYYY-MM-DD
 
+### Changed
+- Vectorisation of the sinusoidal interface function
+- Add thickness of the first layer for the dipping layers function
+- Bounds proportional to the number of layers in dipping_layer function
+
 ### Fixed
 - Version comes from pyproject.toml only
 
