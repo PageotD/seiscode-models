@@ -7,11 +7,17 @@ and this project adheres to Semantic Versioning.
 
 ## [x.y.z] YYYY-MM-DD
 
+### Added
+- `core`: Add `load` and `copy` methods
+- `core`: Add `vmin`, `vmax`, and `stats` methods
+- `core`: Add `clip` and `smooth` methods
+
 ### Changed
 - `models.geological.sinusoidal_interface`: Vectorisation of the function
 - `models.geological.dipping_layers`: Add thickness of the first layer as parameter
 - `models.geological.faulted_layers`: Bounds proportional to the number of layers
 - `utils.io.export_model`: Add .npy if missing and manage C and F ordering
+- move ruff configuration in `pyproject.toml`
 
 ### Fixed
 - Version comes from pyproject.toml only

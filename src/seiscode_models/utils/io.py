@@ -1,16 +1,18 @@
 """Input/Output utilities for exporting velocity models to seismic solvers."""
+
 from pathlib import Path
 import numpy as np
 from typing import Union, Tuple
 from .validation import validate_model
 
+
 def export_model(
-    v: np.ndarray, 
-    filepath: Union[str, Path], 
-    format: str = "bin", 
-    dx: float = 1.0, 
+    v: np.ndarray,
+    filepath: Union[str, Path],
+    format: str = "bin",
+    dx: float = 1.0,
     dz: float = 1.0,
-    order: str = "C"
+    order: str = "C",
 ) -> None:
     """Export a velocity model to a file compatible with seismic solvers.
 
@@ -46,9 +48,14 @@ def export_model(
             filepath = filepath.with_suffix(".npy")
         np.save(filepath, v)
     else:
-        raise ValueError(f"Unsupported export format: '{format}'. Use 'bin', 'raw', or 'npy'.")
+        raise ValueError(
+            f"Unsupported export format: '{format}'. Use 'bin', 'raw', or 'npy'."
+        )
 
-def load_model(filepath: Union[str, Path], shape: Tuple[int, int], dtype=np.float32) -> np.ndarray:
+
+def load_model(
+    filepath: Union[str, Path], shape: Tuple[int, int], dtype=np.float32
+) -> np.ndarray:
     """Load a velocity model from a raw binary file.
 
     Parameters
@@ -73,5 +80,7 @@ def load_model(filepath: Union[str, Path], shape: Tuple[int, int], dtype=np.floa
     v = np.fromfile(filepath, dtype=dtype)
     expected_size = shape[0] * shape[1]
     if v.size != expected_size:
-        raise ValueError(f"File size mismatch: expected {expected_size} elements for shape {shape}, got {v.size}.")
+        raise ValueError(
+            f"File size mismatch: expected {expected_size} elements for shape {shape}, got {v.size}."
+        )
     return v.reshape(shape)

@@ -1,7 +1,15 @@
 """Model validation utilities."""
+
 import numpy as np
 
-def validate_model(v: np.ndarray, dx: float = 1.0, dz: float = 1.0, v_min: float = 200.0, v_max: float = 8000.0) -> None:
+
+def validate_model(
+    v: np.ndarray,
+    dx: float = 1.0,
+    dz: float = 1.0,
+    v_min: float = 0.0,
+    v_max: float = 1.0e12,
+) -> None:
     """Validate a velocity model array and its parameters.
 
     Parameters
