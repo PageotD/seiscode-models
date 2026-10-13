@@ -1,8 +1,11 @@
 """Tests for visualization utilities."""
 from unittest.mock import patch
+
 import numpy as np
 import pytest
+
 import seiscode_models as sm
+
 
 class TestQuickView:
     @patch("matplotlib.pyplot.show")

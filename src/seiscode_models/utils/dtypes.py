@@ -1,4 +1,5 @@
 """Precision management utilities for velocity models."""
+
 from typing import Union
 
 import numpy as np

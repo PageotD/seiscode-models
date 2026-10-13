@@ -1,7 +1,9 @@
 """Tests for geological models and precision behavior."""
 import numpy as np
 import pytest
+
 import seiscode_models as sm
+
 
 class TestGeologicalModels:
     @pytest.mark.parametrize("model_func", [
