@@ -9,7 +9,8 @@ def export_model(
     filepath: Union[str, Path], 
     format: str = "bin", 
     dx: float = 1.0, 
-    dz: float = 1.0
+    dz: float = 1.0,
+    order: str = "C"
 ) -> None:
     """Export a velocity model to a file compatible with seismic solvers.
 
@@ -26,6 +27,9 @@ def export_model(
         Default is 'bin'.
     dx, dz : float, optional
         Grid spacing (validated before export).
+    order : str, optional
+        Memory order for binary export ('C' for row-major, 'F' for column-major).
+        Default is 'C'. Ignored for 'npy' format.
     """
     validate_model(v, dx=dx, dz=dz)
     filepath = Path(filepath)
@@ -33,9 +37,13 @@ def export_model(
 
     fmt = format.lower()
     if fmt in ("bin", "raw"):
-        # Enregistrement en binaire brut (souvent attendu en float32/float64 pur par les solveurs C/Fortran)
-        v.tofile(filepath)
+        if order.upper() == "F":
+            np.asfortranarray(v).tofile(filepath)
+        else:
+            v.tofile(filepath)
     elif fmt == "npy":
+        if filepath.suffix != ".npy":
+            filepath = filepath.with_suffix(".npy")
         np.save(filepath, v)
     else:
         raise ValueError(f"Unsupported export format: '{format}'. Use 'bin', 'raw', or 'npy'.")
@@ -58,9 +66,10 @@ def load_model(filepath: Union[str, Path], shape: Tuple[int, int], dtype=np.floa
         Loaded velocity model.
     """
     filepath = Path(filepath)
-    if filepath.suffix == ".npy":
+    if filepath.suffix == ".npy" or (shape is None and filepath.suffix == ".npy"):
         return np.load(filepath)
-    
+    if shape is None:
+        raise ValueError("Shape must be provided for raw binary files.")
     v = np.fromfile(filepath, dtype=dtype)
     expected_size = shape[0] * shape[1]
     if v.size != expected_size:
