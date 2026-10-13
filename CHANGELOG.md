@@ -8,9 +8,10 @@ and this project adheres to Semantic Versioning.
 ## [x.y.z] YYYY-MM-DD
 
 ### Changed
-- Vectorisation of the sinusoidal interface function
-- Add thickness of the first layer for the dipping layers function
-- Bounds proportional to the number of layers in dipping_layer function
+- `models.geological.sinusoidal_interface`: Vectorisation of the function
+- `models.geological.dipping_layers`: Add thickness of the first layer as parameter
+- `models.geological.faulted_layers`: Bounds proportional to the number of layers
+- `utils.io.export_model`: Add .npy if missing and manage C and F ordering
 
 ### Fixed
 - Version comes from pyproject.toml only
