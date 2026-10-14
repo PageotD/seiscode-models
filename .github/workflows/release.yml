@@ -1,0 +1,22 @@
+name: Release
+
+on:
+    push:
+        branches: [main]
+
+permissions:
+    contents: write
+    pull-requests: write
+
+jobs:
+    release-please:
+        runs-on: ubuntu-latest
+        outputs:
+            release_created: ${{ steps.release.outputs.release_created }}
+            tag: ${{ steps.release.outputs.tag }}
+        steps:
+            - uses: googleapis/release-please-action@v4
+              id: release
+              with:
+                  release-type: python
+                  package-name: seiscode-models
