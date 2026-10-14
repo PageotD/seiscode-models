@@ -1,4 +1,5 @@
 """Tests for primitive functions and dtype preservation."""
+
 import numpy as np
 import pytest
 
@@ -19,6 +20,7 @@ class TestGradientBackground:
         assert np.allclose(v[:, 0], 1000.0)
         assert np.allclose(v[:, -1], 3000.0)
 
+
 class TestAddGaussianAnomaly:
     def test_dtype_preserved(self):
         v = sm.gradient_background(40, 40, dtype=np.float64)
@@ -26,10 +28,11 @@ class TestAddGaussianAnomaly:
         assert v_out.dtype == np.float64
         assert v_out.shape == (40, 40)
 
+
 class TestValidation:
     def test_valid_model(self):
         v = sm.gradient_background(20, 20, dtype="f32")
-        sm.validate_model(v) # Ne doit pas lever d'exception
+        sm.validate_model(v)  # Ne doit pas lever d'exception
 
     def test_invalid_dtype(self):
         v = sm.gradient_background(20, 20).astype(np.int32)

@@ -1,0 +1,98 @@
+name: Release & Publish
+
+on:
+    push:
+        branches:
+            - main
+
+jobs:
+    release:
+        name: Release and Publish
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+            id-token: write # Trusted Publishing PyPI
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+                  token: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Set up Python
+              uses: actions/setup-python@v5
+              with:
+                  python-version: "3.11"
+
+            - name: Install build tools
+              run: |
+                  python -m pip install --upgrade pip
+                  pip install build
+
+            - name: Install git-cliff
+              uses: taiki-e/install-action@git-cliff
+
+            - name: Configure Git identity
+              run: |
+                  git config --global user.name "github-actions[bot]"
+                  git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com>"
+
+            - name: Calculate next version & generate changelog
+              id: semver
+              run: |
+                  # Calculate version
+                  NEXT_VERSION=$(git cliff --bumped-version | sed 's/^v//')
+
+                  if [ -z "$NEXT_VERSION" ]; then
+                    echo "No version bump required."
+                    echo "bump=false" >> $GITHUB_OUTPUT
+                    exit 0
+                  fi
+
+                  echo "Next version: $NEXT_VERSION"
+                  echo "version=$NEXT_VERSION" >> $GITHUB_OUTPUT
+                  echo "bump=true" >> $GITHUB_OUTPUT
+
+                  # 1. Generate CHANGELOG.md with the exact tag
+                  git cliff --tag "$NEXT_VERSION" > CHANGELOG.md
+
+                  # 2. Update pyproject.toml
+                  python3 -c "
+                  import re
+                  path = 'pyproject.toml'
+                  content = open(path).read()
+                  new_content = re.sub(r'(?m)^version\s*=\s*\"[^\"]+\"', f'version = \"${{NEXT_VERSION}}\"', content, count=1)
+                  open(path, 'w').write(new_content)
+                  "
+
+                  git add CHANGELOG.md pyproject.toml
+                  git commit -m "chore(release): seiscode-models-$NEXT_VERSION"
+                  git tag "$NEXT_VERSION"
+
+            - name: Push changes and tags
+              if: steps.semver.outputs.bump == 'true'
+              uses: ad-m/github-push-action@master
+              with:
+                  github_token: ${{ secrets.GITHUB_TOKEN }}
+                  branch: main
+                  tags: true
+
+            - name: Build package distributions
+              if: steps.semver.outputs.bump == 'true'
+              run: python -m build
+
+            - name: Publish package to PyPI
+              if: steps.semver.outputs.bump == 'true'
+              uses: pypa/gh-action-pypi-publish@release/v1
+
+            - name: Create GitHub Release
+              if: steps.semver.outputs.bump == 'true'
+              uses: softprops/action-gh-release@v1
+              with:
+                  tag_name: ${{ steps.semver.outputs.version }}
+                  name: seiscode-models-${{ steps.semver.outputs.version }}
+                  body_path: CHANGELOG.md
+                  files: dist/*
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
