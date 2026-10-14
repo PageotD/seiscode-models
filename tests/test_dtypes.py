@@ -1,4 +1,5 @@
 """Tests for precision dtype utilities."""
+
 import numpy as np
 import pytest
 

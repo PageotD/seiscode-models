@@ -1,4 +1,5 @@
 """Tests for geological models and precision behavior."""
+
 import numpy as np
 import pytest
 
@@ -6,15 +7,18 @@ import seiscode_models as sm
 
 
 class TestGeologicalModels:
-    @pytest.mark.parametrize("model_func", [
-        sm.dipping_layers,
-        sm.sinusoidal_interface,
-        sm.faulted_layers,
-        sm.checkerboard,
-        sm.salt_dome,
-        sm.low_velocity_layer,
-        sm.heterogeneous_anomaly_model,
-    ])
+    @pytest.mark.parametrize(
+        "model_func",
+        [
+            sm.dipping_layers,
+            sm.sinusoidal_interface,
+            sm.faulted_layers,
+            sm.checkerboard,
+            sm.salt_dome,
+            sm.low_velocity_layer,
+            sm.heterogeneous_anomaly_model,
+        ],
+    )
     def test_model_generation_and_dtype(self, model_func):
         # Test f32
         v_f32 = model_func(nx=50, nz=30, dtype="f32")
