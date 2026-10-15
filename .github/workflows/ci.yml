@@ -1,13 +1,6 @@
 name: CI
 
 on:
-    push:
-        branches: [main]
-        paths:
-            - "src/**"
-            - "tests/**"
-            - "pyproject.toml"
-            - ".github/workflows/ci.yml"
     pull_request:
         branches: [main]
         paths:
@@ -26,6 +19,7 @@ jobs:
               uses: actions/setup-python@v5
               with:
                   python-version: "3.11"
+                  cache: "pip"
 
             - name: Install ruff
               run: pip install ruff
@@ -50,6 +44,7 @@ jobs:
               uses: actions/setup-python@v5
               with:
                   python-version: ${{ matrix.python-version }}
+                  cache: "pip"
 
             - name: Install dependencies
               run: |
