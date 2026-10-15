@@ -2,35 +2,141 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to Semantic Versioning.
 
-## [0.3.0] 2026-10-13
+## [0.3.1] - 2026-10-15
+
+
+### Documentation
+
+- improve read me (#12) ([a0f643b](https://github.com/OWNER/REPO/commit/a0f643bb2ebbfb0bbc95b733ca27732c5236abb2))
+
+
+
+### Maintenance
+
+- improve CI workflow (#10) ([5419187](https://github.com/OWNER/REPO/commit/54191873466774a197e3edf22c9239b885afe525))
+
+
+- improve continuous integration by using cache for pip (#11) ([3f3d125](https://github.com/OWNER/REPO/commit/3f3d125c659ae563d8112c2813c96afa3f9babcc))
+
+
+- improve and fix release and publish workflow (#13) ([e86bd3e](https://github.com/OWNER/REPO/commit/e86bd3e0a02779476670789657912e9fac649f42))
+
+
+
+## [0.3.0] - 2026-10-13
+
 
 ### Added
-- `core`: Add `load` and `copy` methods
-- `core`: Add `vmin`, `vmax`, and `stats` methods
-- `core`: Add `clip` and `smooth` methods
 
-### Changed
-- `models.geological.sinusoidal_interface`: Vectorisation of the function
-- `models.geological.dipping_layers`: Add thickness of the first layer as parameter
-- `models.geological.faulted_layers`: Bounds proportional to the number of layers
-- `utils.io.export_model`: Add .npy if missing and manage C and F ordering
-- move ruff configuration in `pyproject.toml`
+- improve geological functions ([f10c277](https://github.com/OWNER/REPO/commit/f10c277736b2ac2808548b4bedf4e315c2ebe7e9))
+
+
+- add new methods and run ruff formating ([2ceab18](https://github.com/OWNER/REPO/commit/2ceab18cf2f4455bbc474d58b5f39fe2a3d155ff))
+
+
 
 ### Fixed
-- Version comes from pyproject.toml only
 
-## [0.2.0] 2026-10-12
+- version comes from pyproject.toml only ([5bdfc6f](https://github.com/OWNER/REPO/commit/5bdfc6fc54e8a8de5ade5b32fbb4cf2f7985be76))
+
+
+- Add .npy if missing and manage C and F ordering ([b622de2](https://github.com/OWNER/REPO/commit/b622de210b2c3812871d771bac03bc973a9c9b53))
+
+
+
+### Release
+
+- prepare for 0.3.0 ([1b4160b](https://github.com/OWNER/REPO/commit/1b4160bddd91bf353aad8be8242de86f0b5a238f))
+
+
+- prepare for 0.3.0 ([20ee83d](https://github.com/OWNER/REPO/commit/20ee83d4a5d0e133277ef93eace0be609a48ba59))
+
+
+
+### Style
+
+- run ruff check --fix ([77ffe49](https://github.com/OWNER/REPO/commit/77ffe49cef89632d33df7a6a2087846c4122cb89))
+
+
+
+## [0.2.0] - 2026-10-12
+
 
 ### Added
-- Object-oriented interface for 2D subsurface velocity models (Phase 3).
-  
-## [0.1.0] 2026-10-12
+
+- add VelocityModel class ([c814510](https://github.com/OWNER/REPO/commit/c8145102608d5d7324c2e7a533cc53747fc1a450))
+
+
+
+### Documentation
+
+- update changelog ([dfb52e1](https://github.com/OWNER/REPO/commit/dfb52e107a5b1e961d1db17969782cbcbbeb56c7))
+
+
+- update changelog ([285180a](https://github.com/OWNER/REPO/commit/285180aebb529b956a48f6c48d5fc78de02c1270))
+
+
+
+### Fixed
+
+- change version for pyproject.toml ([c09f4a6](https://github.com/OWNER/REPO/commit/c09f4a65a66f8b84212225922f1151237828fe12))
+
+
+
+## [0.1.0] - 2026-10-12
+
 
 ### Added
-- Initial project setup, folder structure, and CI/CD pipelines (Phase 0).
-- Support for precision selection (`f32` / `f64`) in model generation (Phase 0).
-- Core velocity primitives and validation with f32/f64 support (Phase 1).
-- Model export functions for seismic solvers (Pahse 2).
+
+- setup package structure and dtype utility for f32/f64 precision ([244f9ae](https://github.com/OWNER/REPO/commit/244f9ae9de2368347f3268f25ffee59b786c0b77))
+
+
+- implement core velocity primitives and validation with f32/f64 support ([81c37b6](https://github.com/OWNER/REPO/commit/81c37b6c4b21ad2db5b592a67cd5a3414304e2bb))
+
+
+- implement geological velocity models with precision support ([da0d2c4](https://github.com/OWNER/REPO/commit/da0d2c428fa6ec6bd74782bd07540f4203cfc9c2))
+
+
+- add model export functions for seismic solvers ([a8c4ef6](https://github.com/OWNER/REPO/commit/a8c4ef6ee05b21f00fd5ecd47d716ee34d273d97))
+
+
+- add visualization module ([799ed34](https://github.com/OWNER/REPO/commit/799ed34e3dbc2e86e7d9c23618c9cee7be5eafc4))
+
+
+
+### Documentation
+
+- update CHANGELOG ([0ea5b2c](https://github.com/OWNER/REPO/commit/0ea5b2c2688e3cf00a53373aa8015a2711cadb27))
+
+
+- Core velocity primitives and validation with f32/f64 support ([8a50266](https://github.com/OWNER/REPO/commit/8a5026629bdbd5e5bcb8220d923c27a8184f105c))
+
+
+- update changelog ([5e9361a](https://github.com/OWNER/REPO/commit/5e9361a61154daba14d47441cd19bb3824aa54a0))
+
+
+
+### Fixed
+
+- ensure dtype annotations are compatible with Python 3.8 ([011a5d0](https://github.com/OWNER/REPO/commit/011a5d0362e395fc3c0a1ed6ecba3f94cf4fd077))
+
+
+- restore Python 3.9 compatibility in IO annotations ([57180f7](https://github.com/OWNER/REPO/commit/57180f74ccea3208d240e5abc7725a7a2931a7e9))
+
+
+- restore Python 3.8/3.9 compatibility in IO annotations ([b141ab6](https://github.com/OWNER/REPO/commit/b141ab695436b903c300ce23ddeb10fa5b11a872))
+
+
+- ensure type annotations (tuple)  support Python 3.8 ([9385144](https://github.com/OWNER/REPO/commit/938514468a6a5ac9bee7ae375da9913fb9eb2542))
+
+
+
+### Maintenance
+
+- add ruff configuration and changelog ([82404f7](https://github.com/OWNER/REPO/commit/82404f762f15f0b81409b29c7ad5f2b06ce8f364))
+
+
+- update release and publish ([051034f](https://github.com/OWNER/REPO/commit/051034f939618eeae091df6b25a4475d05fac792))
+
+
