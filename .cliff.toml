@@ -38,3 +38,6 @@ protect_breaking_commits = false
 filter_commits = false
 topo_order = false
 sort_commits = "oldest"
+
+[bump]
+no_increment_regex = "^(ci|docs|chore|test|refactor)"
