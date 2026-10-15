@@ -56,16 +56,16 @@ jobs:
           # 1. Générer le CHANGELOG.md avec le tag exact
           git cliff --tag "$NEXT_VERSION" > CHANGELOG.md
 
-          # Exporter pour que Python puisse y accéder sans collision avec ${{ }}
+          # Exporter pour que Python puisse y accéder
           export NEXT_VERSION
 
-          # 2. Mettre à jour pyproject.toml
+          # 2. Mettre à jour pyproject.toml (sans accolades)
           python3 -c "
           import os, re
           ver = os.environ['NEXT_VERSION']
           path = 'pyproject.toml'
           content = open(path).read()
-          new_content = re.sub(r'(?m)^version\s*=\s*\"[^\"]+\"', f'version = \"{ver}\"', content, count=1)
+          new_content = re.sub(r'(?m)^version\s*=\s*\"[^\"]+\"', 'version = \"' + ver + '\"', content, count=1)
           open(path, 'w').write(new_content)
           "
 
@@ -76,7 +76,7 @@ jobs:
             ver = os.environ['NEXT_VERSION']
             path = 'Cargo.toml'
             content = open(path).read()
-            new_content = re.sub(r'(?m)^version\s*=\s*\"[^\"]+\"', f'version = \"{ver}\"', content, count=1)
+            new_content = re.sub(r'(?m)^version\s*=\s*\"[^\"]+\"', 'version = \"' + ver + '\"', content, count=1)
             open(path, 'w').write(new_content)
             "
           fi
