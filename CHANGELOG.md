@@ -2,28 +2,6 @@
 
 All notable changes to this project will be documented in this file.
 
-
-## [0.3.1] - 2026-10-15
-
-
-### Documentation
-
-- improve read me (#12) ([a0f643b](https://github.com/OWNER/REPO/commit/a0f643bb2ebbfb0bbc95b733ca27732c5236abb2))
-
-
-
-### Maintenance
-
-- improve CI workflow (#10) ([5419187](https://github.com/OWNER/REPO/commit/54191873466774a197e3edf22c9239b885afe525))
-
-
-- improve continuous integration by using cache for pip (#11) ([3f3d125](https://github.com/OWNER/REPO/commit/3f3d125c659ae563d8112c2813c96afa3f9babcc))
-
-
-- improve and fix release and publish workflow (#13) ([e86bd3e](https://github.com/OWNER/REPO/commit/e86bd3e0a02779476670789657912e9fac649f42))
-
-
-
 ## [0.3.0] - 2026-10-13
 
 
