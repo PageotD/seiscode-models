@@ -9,9 +9,7 @@ from seiscode_models.core import VelocityModel
 
 class TestVelocityModelOOP:
     def test_factory_and_properties(self):
-        model = sm.VelocityModel.gradient(
-            nx=100, nz=50, dx=2.0, dz=2.0, dtype="f32"
-        )
+        model = sm.VelocityModel.gradient(nx=100, nz=50, dx=2.0, dz=2.0, dtype="f32")
 
         assert model.nx == 100
         assert model.nz == 50
@@ -23,9 +21,7 @@ class TestVelocityModelOOP:
     def test_method_chaining(self):
         model = (
             sm.VelocityModel.gradient(nx=80, nz=40, dtype="f64")
-            .add_gaussian_anomaly(
-                cx=40, cz=20, sigma_x=5.0, sigma_z=5.0, dv=500.0
-            )
+            .add_gaussian_anomaly(cx=40, cz=20, sigma_x=5.0, sigma_z=5.0, dv=500.0)
             .add_fault(ix_fault=50, throw=5)
         )
 
@@ -59,14 +55,14 @@ class TestVelocityModelOOP:
         assert model.dtype == np.float32
 
         # Velocity at the anomaly center increases.
-        assert model.data[40, 20] == 500 #pytest.approx(
+        assert model.data[40, 20] == 500  # pytest.approx(
         #    original[40, 20] + 500.0
-        #)
+        # )
 
         # A point inside the ellipse is affected.
-        assert model.data[40, 24] == 500 #pytest.approx(
-            #original[40, 24] + 500.0
-        #)
+        assert model.data[40, 24] == 500  # pytest.approx(
+        # original[40, 24] + 500.0
+        # )
 
         # A point outside the ellipse remains unchanged.
         assert model.data[40, 27] == pytest.approx(original[40, 27])
@@ -74,9 +70,7 @@ class TestVelocityModelOOP:
     def test_add_anomalies_method_chaining(self):
         model = (
             sm.VelocityModel.gradient(nx=80, nz=40, dtype="f64")
-            .add_gaussian_anomaly(
-                cx=30, cz=15, sigma_x=4.0, sigma_z=3.0, dv=300.0
-            )
+            .add_gaussian_anomaly(cx=30, cz=15, sigma_x=4.0, sigma_z=3.0, dv=300.0)
             .add_elliptical_inclusion(
                 cx=55, cz=20, radius_x=8.0, radius_z=4.0, cv=-200.0
             )
@@ -113,17 +107,13 @@ class TestVelocityModelOOP:
         original = model.data.copy()
 
         copied = model.copy()
-        copied.add_gaussian_anomaly(
-            cx=100, cz=25, sigma_x=10.0, sigma_z=5.0, dv=500.0
-        )
+        copied.add_gaussian_anomaly(cx=100, cz=25, sigma_x=10.0, sigma_z=5.0, dv=500.0)
 
         assert model != copied
         assert np.array_equal(model.data, original)
 
     def test_copy_preserves_metadata(self):
-        model = sm.VelocityModel.gradient(
-            nx=60, nz=30, dx=2.5, dz=3.0, dtype="f64"
-        )
+        model = sm.VelocityModel.gradient(nx=60, nz=30, dx=2.5, dz=3.0, dtype="f64")
         copied = model.copy()
 
         assert copied is not model

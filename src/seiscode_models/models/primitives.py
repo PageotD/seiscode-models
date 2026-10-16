@@ -99,6 +99,7 @@ def add_fault_offset(v: np.ndarray, ix_fault: int, throw: int) -> np.ndarray:
         out[right, :throw] = v[right, -throw:]
     return out
 
+
 def add_elliptical_inclusion(
     v: np.ndarray,
     cx: float,

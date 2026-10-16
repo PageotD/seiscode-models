@@ -11,9 +11,9 @@ from .models.geological import (
     sinusoidal_interface,
 )
 from .models.primitives import (
+    add_elliptical_inclusion,
     add_fault_offset,
     add_gaussian_anomaly,
-    add_elliptical_inclusion,
     gradient_background,
 )
 from .utils.dtypes import parse_dtype
