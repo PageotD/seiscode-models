@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 
 
+## [0.4.0] - 2026-10-16
+
+
+### Added
+
+- add elliptical inclusion primitive (#17) ([13b03e5](https://github.com/OWNER/REPO/commit/13b03e52da27208da402c5368f4df1689b55dbfe))
+
+
+
+### Documentation
+
+- rewrite README with accurate API examples (#16) ([da118d9](https://github.com/OWNER/REPO/commit/da118d9b6e9682f3159795a87c4bd8eaaddd795a))
+
+
+
+### Maintenance
+
+- switch to manual workflow dispatch with automated version calculation (#15) ([63eaab1](https://github.com/OWNER/REPO/commit/63eaab1964bdbe501d551e20daca1b37eadf7df5))
+
+
+
 ## [0.3.1] - 2026-10-15
 
 
@@ -27,6 +48,9 @@ All notable changes to this project will be documented in this file.
 
 
 - manage git cliff configuration (#14) ([d178fa7](https://github.com/OWNER/REPO/commit/d178fa72fab874b3609c08207ec9615d6d8ffc6e))
+
+
+- seiscode-models-0.3.1 ([19fd6a3](https://github.com/OWNER/REPO/commit/19fd6a38dc3fbb236e6726367a5959d6dc245c54))
 
 
 
