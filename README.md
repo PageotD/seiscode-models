@@ -261,12 +261,12 @@ The `VelocityModel` class provides methods for modifying velocity fields in plac
 
 ### Add a Gaussian anomaly
 
-Use `add_anomaly()` to introduce a localized positive or negative velocity perturbation.
+Use `add_gaussian_anomaly()` to introduce a localized positive or negative velocity perturbation.
 
 ```python
 model = VelocityModel.gradient(nx=201, nz=101)
 
-model.add_anomaly(
+model.add_gaussian_anomaly(
     cx=100,
     cz=50,
     sigma_x=15,
@@ -281,6 +281,27 @@ Parameters:
 - `sigma_x`, `sigma_z`: Gaussian standard deviations in grid cells.
 - `dv`: Velocity perturbation at the anomaly center, in m/s.
 - `vmin`, `vmax`: Minimum and maximum allowed velocities.
+
+### Add an elliptical inclusion
+Use `add_elliptical_inclusion()` to introduce a localized velocity inclusion.
+
+```python
+model = VelocityModel.gradient(nx=201, nz=101)
+
+model.add_elliptical_inclusion(
+    cx=100,
+    cz=50,
+    radius_x=15.0,
+    radius_z=10.0,
+    cv=200.0,
+)
+```
+
+Parameters:
+
+- `cx`, `cz`: Anomaly center in grid cells.
+- `radius_x`, `radius_z`: Radius along x and z axis.
+- `cv`: (constant) Velocity of the inclusion in m/s.
 
 ### Apply a fault offset
 

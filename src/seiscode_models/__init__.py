@@ -11,6 +11,7 @@ from .models.geological import (
     sinusoidal_interface,
 )
 from .models.primitives import (
+    add_elliptical_inclusion,
     add_fault_offset,
     add_gaussian_anomaly,
     gradient_background,
@@ -38,6 +39,7 @@ __all__ = [
     "gradient_background",
     "add_gaussian_anomaly",
     "add_fault_offset",
+    "add_elliptical_inclusion",
     "parse_dtype",
     "validate_model",
     "dipping_layers",

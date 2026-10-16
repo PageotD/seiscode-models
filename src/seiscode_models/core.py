@@ -15,6 +15,7 @@ from .models.geological import (
     sinusoidal_interface,
 )
 from .models.primitives import (
+    add_elliptical_inclusion,
     add_fault_offset,
     add_gaussian_anomaly,
     gradient_background,
@@ -218,7 +219,7 @@ class VelocityModel:
 
     # --- Modifier Methods (Fluent Interface / Method Chaining) ---
 
-    def add_anomaly(
+    def add_gaussian_anomaly(
         self,
         cx: float,
         cz: float,
@@ -231,6 +232,20 @@ class VelocityModel:
         """Add a Gaussian velocity anomaly in place and return self for method chaining."""
         self._data = add_gaussian_anomaly(
             self._data, cx, cz, sigma_x, sigma_z, dv, vmin=vmin, vmax=vmax
+        )
+        return self
+
+    def add_elliptical_inclusion(
+        self,
+        cx: float,
+        cz: float,
+        radius_x: float,
+        radius_z: float,
+        cv: float,
+    ) -> "VelocityModel":
+        """Add an elliptical velocity anomaly in place and return self for method chaining."""
+        self._data = add_elliptical_inclusion(
+            self._data, cx, cz, radius_x, radius_z, cv
         )
         return self
 

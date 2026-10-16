@@ -98,3 +98,26 @@ def add_fault_offset(v: np.ndarray, ix_fault: int, throw: int) -> np.ndarray:
     else:
         out[right, :throw] = v[right, -throw:]
     return out
+
+
+def add_elliptical_inclusion(
+    v: np.ndarray,
+    cx: float,
+    cz: float,
+    radius_x: float,
+    radius_z: float,
+    cv: float,
+) -> np.ndarray:
+    """Add an elliptical velocity anomaly and return a new model."""
+    if radius_x <= 0 or radius_z <= 0:
+        raise ValueError("Ellipse radius_x and radius_z must be positive.")
+
+    out = v.copy()
+
+    x, z = np.indices(v.shape)
+
+    mask = ((x - cx) / radius_x) ** 2 + ((z - cz) / radius_z) ** 2 < 1.0
+
+    out[mask] = cv
+
+    return out.astype(v.dtype, copy=False)
