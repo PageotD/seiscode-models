@@ -17,6 +17,7 @@ from .models.geological import (
 from .models.primitives import (
     add_fault_offset,
     add_gaussian_anomaly,
+    add_elliptical_inclusion,
     gradient_background,
 )
 from .utils.io import export_model
@@ -218,7 +219,7 @@ class VelocityModel:
 
     # --- Modifier Methods (Fluent Interface / Method Chaining) ---
 
-    def add_anomaly(
+    def add_gaussian_anomaly(
         self,
         cx: float,
         cz: float,
@@ -234,6 +235,19 @@ class VelocityModel:
         )
         return self
 
+    def add_elliptical_inclusion(
+        self,
+        cx: float,
+        cz: float,
+        radius_x: float,
+        radius_z: float,
+        cv: float,
+    ) -> "VelocityModel":
+        """Add an elliptical velocity anomaly in place and return self for method chaining."""
+        self._data = add_elliptical_inclusion(
+            self._data, cx, cz, radius_x, radius_z, cv)
+        return self
+    
     def add_fault(self, ix_fault: int, throw: int) -> "VelocityModel":
         """Apply a fault offset in place and return self for method chaining."""
         self._data = add_fault_offset(self._data, ix_fault, throw)

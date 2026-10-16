@@ -13,6 +13,7 @@ from .models.geological import (
 from .models.primitives import (
     add_fault_offset,
     add_gaussian_anomaly,
+    add_elliptical_inclusion,
     gradient_background,
 )
 from .utils.dtypes import parse_dtype
@@ -38,6 +39,7 @@ __all__ = [
     "gradient_background",
     "add_gaussian_anomaly",
     "add_fault_offset",
+    "add_elliptical_inclusion",
     "parse_dtype",
     "validate_model",
     "dipping_layers",
