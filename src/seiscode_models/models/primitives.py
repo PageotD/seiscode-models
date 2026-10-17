@@ -1,7 +1,7 @@
 """Primitive building blocks for subsurface velocity models with dtype and physical coordinate support."""
 
 from typing import Optional, Union
-import warnings
+
 import numpy as np
 
 from ..utils.dtypes import parse_dtype

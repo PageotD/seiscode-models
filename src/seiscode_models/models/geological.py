@@ -1,6 +1,7 @@
 """Geological velocity models supporting f32/f64 precision and physical coordinates."""
 
-from typing import Optional, Sequence, Tuple, Union
+from typing import Optional, Sequence, Union
+
 import numpy as np
 
 from ..utils.dtypes import parse_dtype
