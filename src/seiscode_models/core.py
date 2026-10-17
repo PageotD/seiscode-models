@@ -76,6 +76,47 @@ class VelocityModel:
         """NumPy data type precision (float32 or float64)."""
         return self._data.dtype
 
+    @property
+    def extent(self) -> Tuple[float, float, float, float]:
+        """Physical bounding box (x_min, x_max, z_max, z_min) for plotting.
+
+        Returns
+        -------
+        tuple of float
+            (0.0, (nx - 1) * dx, (nz - 1) * dz, 0.0) in meters.
+        """
+        return (0.0, float((self.nx - 1) * self._dx), float((self.nz - 1) * self._dz), 0.0)
+
+    @property
+    def x_coords(self) -> np.ndarray:
+        """1D array of horizontal grid coordinates in meters."""
+        return np.arange(self.nx, dtype=np.float64) * self._dx
+
+    @property
+    def z_coords(self) -> np.ndarray:
+        """1D array of vertical depth coordinates in meters."""
+        return np.arange(self.nz, dtype=np.float64) * self._dz
+
+    def cfl_dt(self, cfl: float = 0.5) -> float:
+        """Estimate the maximum stable time step dt for a 2D acoustic/elastic wave solver.
+
+        Uses the 2D Courant-Friedrichs-Lewy (CFL) stability criterion:
+        dt <= cfl * min(dx, dz) / (v_max * sqrt(2)).
+
+        Parameters
+        ----------
+        cfl : float, optional
+            Courant number safety factor (typically <= 0.6 for 2nd order time schemes). Default is 0.5.
+
+        Returns
+        -------
+        float
+            Maximum stable time step in seconds.
+        """
+        min_spacing = min(self._dx, self._dz)
+        return float(cfl * min_spacing / (self.vmax * np.sqrt(2.0)))
+
+
     # --- Factory Methods (Constructeurs géologiques orientés objet) ---
 
     @classmethod
@@ -777,6 +818,31 @@ class VelocityModel:
                 out += padded[di : di + self.nx, dj : dj + self.nz]
         self._data = (out / (k * k)).astype(self._data.dtype)
         return self
+
+    def pad_boundaries(
+        self,
+        npad: Union[int, Tuple[int, int], Tuple[Tuple[int, int], Tuple[int, int]]] = 20,
+        mode: str = "edge",
+    ) -> "VelocityModel":
+        """Pad model boundaries in place, ideal for absorbing boundary layers (PML/sponge).
+
+        Parameters
+        ----------
+        npad : int or tuple of ints, optional
+            Number of cells padded to edges. Can be a single int (applied to all sides)
+            or ((pad_x_left, pad_x_right), (pad_z_top, pad_z_bottom)). Default is 20.
+        mode : str, optional
+            Padding mode supported by numpy.pad (e.g., 'edge', 'constant', 'reflect').
+            Default is 'edge'.
+
+        Returns
+        -------
+        VelocityModel
+            Self reference for fluent method chaining.
+        """
+        self._data = np.pad(self._data, npad, mode=mode)
+        return self
+
 
     # --- Utility Methods ---
     @classmethod
