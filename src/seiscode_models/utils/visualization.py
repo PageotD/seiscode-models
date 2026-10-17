@@ -11,18 +11,26 @@ def quick_view(
     dz: float = 1.0,
     title: str = "Velocity model",
 ) -> None:
-    """Display a velocity field with depth positive downward.
+    """Display a 2D velocity field with depth positive downward using matplotlib.
+
+    Renders the velocity model with correct physical coordinates (extent in meters),
+    an automated aspect ratio, the viridis colormap, and a labeled colorbar.
 
     Parameters
     ----------
-    velocities : ndarray (nx, nz)
-        Velocity field to display, in m/s.
+    velocities : ndarray of shape (nx, nz)
+        2D velocity field to display, in m/s.
     dx : float, optional
-        Grid spacing along x, in meters. Default is 1.0.
+        Grid spacing along horizontal x-axis in meters. Default is 1.0.
     dz : float, optional
-        Grid spacing along z, in meters. Default is 1.0.
+        Grid spacing along vertical z-axis in meters. Default is 1.0.
     title : str, optional
-        Figure title. Default is "Velocity model".
+        Title string displayed on the plot figure. Default is "Velocity model".
+
+    Raises
+    ------
+    ValueError
+        If `velocities` fails validation or if grid intervals are non-positive.
     """
     import matplotlib.pyplot as plt
 
