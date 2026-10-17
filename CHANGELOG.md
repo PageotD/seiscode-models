@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 
 
+## [0.5.0] - 2026-10-17
+
+
+### Added
+
+- geological model extensions (#20) ([61bdc6f](https://github.com/OWNER/REPO/commit/61bdc6fa80fe30eb5e946f7b177ae53f837fd3a1))
+
+
+- grid manipulation utilities (#21) ([5f823be](https://github.com/OWNER/REPO/commit/5f823be0c123fd2ab6e65e7e24b3113e75b1f81e))
+
+
+
+### Changed
+
+- homogenize parameters (#18) ([96a0b01](https://github.com/OWNER/REPO/commit/96a0b017e551800227a51afdc9d5dc64035d8488))
+
+
+
+### Documentation
+
+- complete english docstrings (#19) ([5a07341](https://github.com/OWNER/REPO/commit/5a07341f06f4458959a94cbe3d2d03eb47ac4ff9))
+
+
+
 ## [0.4.0] - 2026-10-16
 
 
@@ -21,6 +45,9 @@ All notable changes to this project will be documented in this file.
 ### Maintenance
 
 - switch to manual workflow dispatch with automated version calculation (#15) ([63eaab1](https://github.com/OWNER/REPO/commit/63eaab1964bdbe501d551e20daca1b37eadf7df5))
+
+
+- seiscode-models-0.4.0 ([d2b7c90](https://github.com/OWNER/REPO/commit/d2b7c90cac97a669b5186e32620eb531e18fb9aa))
 
 
 
