@@ -228,3 +228,24 @@ class TestVelocityModelOOP:
         )
 
         assert model1 != model2
+
+    def test_grid_properties_and_cfl(self):
+        model = sm.VelocityModel.gradient(
+            nx=21, nz=11, dx=10.0, dz=5.0, v0=1000.0, v1=2000.0
+        )
+        assert model.extent == (0.0, 200.0, 50.0, 0.0)
+        assert len(model.x_coords) == 21
+        assert model.x_coords[-1] == 200.0
+        assert len(model.z_coords) == 11
+        assert model.z_coords[-1] == 50.0
+
+        # CFL check: dt <= 0.5 * min(10, 5) / (2000 * sqrt(2)) = 2.5 / (2000 * sqrt(2))
+        expected_dt = 0.5 * 5.0 / (2000.0 * np.sqrt(2.0))
+        assert model.cfl_dt(cfl=0.5) == pytest.approx(expected_dt)
+
+    def test_pad_boundaries(self):
+        model = sm.VelocityModel.gradient(nx=30, nz=20, dx=5.0, dz=5.0)
+        model.pad_boundaries(npad=10, mode="edge")
+        assert model.nx == 50
+        assert model.nz == 40
+        assert model.data.shape == (50, 40)
