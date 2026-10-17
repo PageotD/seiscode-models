@@ -87,7 +87,7 @@ class VelocityModel:
         dtype: Union[str, np.dtype] = np.float32,
     ) -> "VelocityModel":
         """Create a model with a linear velocity gradient with depth."""
-        arr = gradient_background(nx, nz, v0=v0, v1=v1, dtype=dtype)
+        arr = gradient_background(nx=nx, nz=nz, dx=dx, dz=dz, v0=v0, v1=v1, dtype=dtype)
         return cls(arr, dx=dx, dz=dz)
 
     @classmethod
@@ -97,15 +97,23 @@ class VelocityModel:
         nz: int = 51,
         dx: float = 1.0,
         dz: float = 1.0,
-        cx: int = 140,
-        width: float = 40.0,
+        cx: Optional[float] = None,
+        width: Optional[float] = None,
         v_salt: float = 4500.0,
         v_sed: float = 2500.0,
         dtype: Union[str, np.dtype] = np.float32,
     ) -> "VelocityModel":
         """Create a salt dome model."""
         arr = salt_dome(
-            nx, nz, cx=cx, width=width, v_salt=v_salt, v_sed=v_sed, dtype=dtype
+            nx=nx,
+            nz=nz,
+            dx=dx,
+            dz=dz,
+            cx=cx,
+            width=width,
+            v_salt=v_salt,
+            v_sed=v_sed,
+            dtype=dtype,
         )
         return cls(arr, dx=dx, dz=dz)
 
@@ -118,11 +126,19 @@ class VelocityModel:
         dz: float = 1.0,
         v: Tuple[float, ...] = (1800.0, 2400.0, 3200.0, 4200.0),
         dip_deg: float = 8.0,
+        thickness: float = 10.0,
         dtype: Union[str, np.dtype] = np.float32,
     ) -> "VelocityModel":
         """Create a dipping layers model."""
         arr = dipping_layers(
-            nx=nx, nz=nz, dx=dx, dz=dz, v=v, dip_deg=dip_deg, dtype=dtype
+            nx=nx,
+            nz=nz,
+            dx=dx,
+            dz=dz,
+            v=v,
+            dip_deg=dip_deg,
+            thickness=thickness,
+            dtype=dtype,
         )
         return cls(arr, dx=dx, dz=dz)
 
@@ -135,6 +151,7 @@ class VelocityModel:
         dz: float = 1.0,
         period: float = 100.0,
         amplitude: float = 8.0,
+        z_mean: Optional[float] = None,
         v_top: float = 2000.0,
         v_bottom: float = 3500.0,
         dtype: Union[str, np.dtype] = np.float32,
@@ -143,8 +160,11 @@ class VelocityModel:
         arr = sinusoidal_interface(
             nx=nx,
             nz=nz,
+            dx=dx,
+            dz=dz,
             period=period,
             amplitude=amplitude,
+            z_mean=z_mean,
             v_top=v_top,
             v_bottom=v_bottom,
             dtype=dtype,
@@ -158,14 +178,23 @@ class VelocityModel:
         nz: int = 51,
         dx: float = 1.0,
         dz: float = 1.0,
-        ix_fault: int = 120,
-        throw: int = 8,
+        x_fault: Optional[float] = None,
+        throw: Optional[float] = None,
         v: Tuple[float, ...] = (1800.0, 2400.0, 3200.0, 4200.0),
         dtype: Union[str, np.dtype] = np.float32,
+        ix_fault: Optional[int] = None,
     ) -> "VelocityModel":
         """Create a faulted stratigraphic layers model."""
         arr = faulted_layers(
-            nx=nx, nz=nz, ix_fault=ix_fault, throw=throw, v=v, dtype=dtype
+            nx=nx,
+            nz=nz,
+            dx=dx,
+            dz=dz,
+            x_fault=x_fault,
+            throw=throw,
+            v=v,
+            dtype=dtype,
+            ix_fault=ix_fault,
         )
         return cls(arr, dx=dx, dz=dz)
 
@@ -176,13 +205,26 @@ class VelocityModel:
         nz: int = 51,
         dx: float = 1.0,
         dz: float = 1.0,
-        cell: int = 20,
+        cell_x: Optional[float] = None,
+        cell_z: Optional[float] = None,
+        cell: Optional[float] = None,
         v0: float = 3000.0,
         dv: float = 600.0,
         dtype: Union[str, np.dtype] = np.float32,
     ) -> "VelocityModel":
         """Create a checkerboard resolution test model."""
-        arr = checkerboard(nx=nx, nz=nz, cell=cell, v0=v0, dv=dv, dtype=dtype)
+        arr = checkerboard(
+            nx=nx,
+            nz=nz,
+            dx=dx,
+            dz=dz,
+            cell_x=cell_x,
+            cell_z=cell_z,
+            cell=cell,
+            v0=v0,
+            dv=dv,
+            dtype=dtype,
+        )
         return cls(arr, dx=dx, dz=dz)
 
     @classmethod
@@ -192,14 +234,23 @@ class VelocityModel:
         nz: int = 51,
         dx: float = 1.0,
         dz: float = 1.0,
-        k0: int = 20,
-        thickness: int = 8,
+        z0: Optional[float] = None,
+        thickness: Optional[float] = None,
         v_slow: float = 1200.0,
         dtype: Union[str, np.dtype] = np.float32,
+        k0: Optional[int] = None,
     ) -> "VelocityModel":
         """Create a model with a buried low-velocity channel."""
         arr = low_velocity_layer(
-            nx=nx, nz=nz, k0=k0, thickness=thickness, v_slow=v_slow, dtype=dtype
+            nx=nx,
+            nz=nz,
+            dx=dx,
+            dz=dz,
+            z0=z0,
+            thickness=thickness,
+            v_slow=v_slow,
+            dtype=dtype,
+            k0=k0,
         )
         return cls(arr, dx=dx, dz=dz)
 
@@ -214,7 +265,9 @@ class VelocityModel:
         dtype: Union[str, np.dtype] = np.float32,
     ) -> "VelocityModel":
         """Create a complex heterogeneous synthetic anomaly model."""
-        arr = heterogeneous_anomaly_model(nx=nx, nz=nz, seed=seed, dtype=dtype)
+        arr = heterogeneous_anomaly_model(
+            nx=nx, nz=nz, dx=dx, dz=dz, seed=seed, dtype=dtype
+        )
         return cls(arr, dx=dx, dz=dz)
 
     # --- Modifier Methods (Fluent Interface / Method Chaining) ---
@@ -231,7 +284,16 @@ class VelocityModel:
     ) -> "VelocityModel":
         """Add a Gaussian velocity anomaly in place and return self for method chaining."""
         self._data = add_gaussian_anomaly(
-            self._data, cx, cz, sigma_x, sigma_z, dv, vmin=vmin, vmax=vmax
+            self._data,
+            cx,
+            cz,
+            sigma_x,
+            sigma_z,
+            dv,
+            dx=self._dx,
+            dz=self._dz,
+            vmin=vmin,
+            vmax=vmax,
         )
         return self
 
@@ -245,13 +307,32 @@ class VelocityModel:
     ) -> "VelocityModel":
         """Add an elliptical velocity anomaly in place and return self for method chaining."""
         self._data = add_elliptical_inclusion(
-            self._data, cx, cz, radius_x, radius_z, cv
+            self._data,
+            cx,
+            cz,
+            radius_x,
+            radius_z,
+            cv,
+            dx=self._dx,
+            dz=self._dz,
         )
         return self
 
-    def add_fault(self, ix_fault: int, throw: int) -> "VelocityModel":
+    def add_fault(
+        self,
+        x_fault: Optional[float] = None,
+        throw: Optional[float] = None,
+        ix_fault: Optional[int] = None,
+    ) -> "VelocityModel":
         """Apply a fault offset in place and return self for method chaining."""
-        self._data = add_fault_offset(self._data, ix_fault, throw)
+        self._data = add_fault_offset(
+            self._data,
+            x_fault=x_fault,
+            throw=throw,
+            dx=self._dx,
+            dz=self._dz,
+            ix_fault=ix_fault,
+        )
         return self
 
     def clip(

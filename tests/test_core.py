@@ -90,6 +90,20 @@ class TestVelocityModelOOP:
         assert model.data.shape == original.shape
         assert model.dtype == original.dtype
 
+    def test_physical_coordinates_with_dx_dz(self):
+        # Model with non-unit spacing: dx=10.0m, dz=5.0m
+        model = sm.VelocityModel.gradient(nx=50, nz=40, dx=10.0, dz=5.0)
+        # Add anomaly at x=100m (col 10), z=50m (row 10)
+        model.add_elliptical_inclusion(
+            cx=100.0, cz=50.0, radius_x=20.0, radius_z=10.0, cv=999.0
+        )
+        assert model.data[10, 10] == 999.0
+        assert model.data[0, 0] != 999.0
+
+        # Add fault with physical x_fault and throw in meters
+        model.add_fault(x_fault=200.0, throw=10.0)  # col 20, shift 2 rows
+        assert model.data.shape == (50, 40)
+
     def test_export_from_model(self, tmp_path):
         model = sm.VelocityModel.salt_dome(30, 30)
         file_path = tmp_path / "oop_model.bin"

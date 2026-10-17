@@ -68,6 +68,22 @@ class TestAddEllipticalAnomaly:
         assert v_out.dtype == np.float64
         assert v_out.shape == (40, 40)
 
+    def test_physical_coordinates(self):
+        v = np.zeros((40, 40), dtype=np.float32)
+        # dx=5.0m, dz=2.0m: center at x=50m (col 10), z=40m (row 20)
+        v_out = sm.add_elliptical_inclusion(
+            v, cx=50.0, cz=40.0, radius_x=15.0, radius_z=6.0, cv=3000.0, dx=5.0, dz=2.0
+        )
+        assert v_out[10, 20] == 3000.0
+        assert v_out[0, 0] == 0.0
+
+    def test_fault_offset_physical_coordinates(self):
+        v = np.arange(20, dtype=np.float32)[None, :].repeat(20, axis=0)
+        v_shifted = sm.add_fault_offset(v, x_fault=20.0, throw=6.0, dx=2.0, dz=2.0)
+        # col_fault = 20 / 2 = 10, shift = 6 / 2 = 3 cells
+        assert v_shifted.shape == (20, 20)
+        assert v_shifted[0, 3] == v[0, 0]
+
 
 class TestValidation:
     def test_valid_model(self):
