@@ -183,7 +183,9 @@ def faulted_layers(
     for k in range(vs.size - 1):
         base[:, edges[k] : edges[k + 1]] = vs[k]
 
-    return add_fault_offset(base, x_fault=fault_pos, throw=throw_val, dx=dx, dz=dz).astype(dt)
+    return add_fault_offset(
+        base, x_fault=fault_pos, throw=throw_val, dx=dx, dz=dz
+    ).astype(dt)
 
 
 def checkerboard(
@@ -289,8 +291,16 @@ def salt_dome(
     dt = parse_dtype(dtype)
     v = gradient_background(nx, nz, dx=dx, dz=dz, v0=v_sed, v1=4000.0, dtype=dt)
 
-    center_x = float(cx * dx if cx is not None and cx < nx else (cx if cx is not None else 140.0 * dx))
-    semi_width = float(width * dx if width is not None and width < nx else (width if width is not None else 40.0 * dx))
+    center_x = float(
+        cx * dx
+        if cx is not None and cx < nx
+        else (cx if cx is not None else 140.0 * dx)
+    )
+    semi_width = float(
+        width * dx
+        if width is not None and width < nx
+        else (width if width is not None else 40.0 * dx)
+    )
 
     x = (np.arange(nx, dtype=dt) * dx)[:, None]
     z = (np.arange(nz, dtype=dt) * dz)[None, :]
@@ -393,9 +403,29 @@ def heterogeneous_anomaly_model(
     dt = parse_dtype(dtype)
     rng = np.random.default_rng(seed)
     v = gradient_background(nx, nz, dx=dx, dz=dz, v0=1500.0, v1=4800.0, dtype=dt)
-    v = add_gaussian_anomaly(v, (nx * dx) * 0.72, (nz * dz) * 0.35, 30.0 * dx, 12.0 * dz, 1200.0, dx=dx, dz=dz)
-    v = add_gaussian_anomaly(v, (nx * dx) * 0.25, (nz * dz) * 0.55, 25.0 * dx, 10.0 * dz, -700.0, dx=dx, dz=dz)
-    v = add_gaussian_anomaly(v, (nx * dx) * 0.5, (nz * dz) * 0.75, 40.0 * dx, 15.0 * dz, 900.0, dx=dx, dz=dz)
+    v = add_gaussian_anomaly(
+        v,
+        (nx * dx) * 0.72,
+        (nz * dz) * 0.35,
+        30.0 * dx,
+        12.0 * dz,
+        1200.0,
+        dx=dx,
+        dz=dz,
+    )
+    v = add_gaussian_anomaly(
+        v,
+        (nx * dx) * 0.25,
+        (nz * dz) * 0.55,
+        25.0 * dx,
+        10.0 * dz,
+        -700.0,
+        dx=dx,
+        dz=dz,
+    )
+    v = add_gaussian_anomaly(
+        v, (nx * dx) * 0.5, (nz * dz) * 0.75, 40.0 * dx, 15.0 * dz, 900.0, dx=dx, dz=dz
+    )
     noise = rng.normal(0.0, 1.0, (nx, nz)).astype(dt)
     k = 7
     pad = k // 2
@@ -406,4 +436,3 @@ def heterogeneous_anomaly_model(
             smooth += padded[di : di + nx, dj : dj + nz]
     smooth /= k * k
     return np.clip(v * (1.0 + 0.05 * smooth / smooth.std()), 500.0, 6000.0).astype(dt)
-

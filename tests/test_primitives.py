@@ -85,7 +85,6 @@ class TestAddEllipticalAnomaly:
         assert v_shifted[0, 3] == v[0, 0]
 
 
-
 class TestValidation:
     def test_valid_model(self):
         v = sm.gradient_background(20, 20, dtype="f32")

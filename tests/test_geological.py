@@ -34,7 +34,9 @@ class TestGeologicalModels:
 
     def test_physical_parameters(self):
         # Test low_velocity_layer with z0 and thickness in meters
-        v_lvl = sm.low_velocity_layer(nx=40, nz=40, dx=5.0, dz=2.0, z0=20.0, thickness=10.0, v_slow=1000.0)
+        v_lvl = sm.low_velocity_layer(
+            nx=40, nz=40, dx=5.0, dz=2.0, z0=20.0, thickness=10.0, v_slow=1000.0
+        )
         # z0=20m -> row 10, thickness=10m -> rows 10 to 15
         assert v_lvl[0, 10] == 1000.0
         assert v_lvl[0, 14] == 1000.0
@@ -44,4 +46,3 @@ class TestGeologicalModels:
         v_cb = sm.checkerboard(nx=40, nz=40, dx=2.0, dz=2.0, cell_x=20.0, cell_z=10.0)
         assert v_cb.shape == (40, 40)
         sm.validate_model(v_cb, dx=2.0, dz=2.0)
-
