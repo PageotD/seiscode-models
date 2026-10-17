@@ -46,3 +46,37 @@ class TestGeologicalModels:
         v_cb = sm.checkerboard(nx=40, nz=40, dx=2.0, dz=2.0, cell_x=20.0, cell_z=10.0)
         assert v_cb.shape == (40, 40)
         sm.validate_model(v_cb, dx=2.0, dz=2.0)
+
+    def test_layered_model(self):
+        v = sm.layered_model(
+            nx=30,
+            nz=50,
+            dx=2.0,
+            dz=2.0,
+            thicknesses=(20.0, 30.0),
+            velocities=(1500.0, 2500.0, 3500.0),
+            dtype="f32",
+        )
+        assert v.shape == (30, 50)
+        assert v.dtype == np.float32
+        # layer 1: 0 to 20m -> cells 0 to 10
+        assert v[0, 0] == 1500.0
+        assert v[0, 9] == 1500.0
+        # layer 2: 20 to 50m -> cells 10 to 25
+        assert v[0, 10] == 2500.0
+        assert v[0, 24] == 2500.0
+        # basement: 50m to 100m -> cells 25 to 50
+        assert v[0, 25] == 3500.0
+        assert v[0, 49] == 3500.0
+
+        # Test VelocityModel.layered
+        model = sm.VelocityModel.layered(
+            nx=30, nz=50, dx=2.0, dz=2.0, thicknesses=(20.0, 30.0), velocities=(1500.0, 2500.0, 3500.0)
+        )
+        assert isinstance(model, sm.VelocityModel)
+        assert np.array_equal(model.data, v)
+
+    def test_layered_model_invalid_lengths(self):
+        with pytest.raises(ValueError, match="Expected len"):
+            sm.layered_model(thicknesses=(50.0,), velocities=(1500.0, 2000.0, 3000.0))
+

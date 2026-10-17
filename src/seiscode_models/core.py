@@ -10,6 +10,7 @@ from .models.geological import (
     dipping_layers,
     faulted_layers,
     heterogeneous_anomaly_model,
+    layered_model,
     low_velocity_layer,
     salt_dome,
     sinusoidal_interface,
@@ -271,6 +272,52 @@ class VelocityModel:
             z_mean=z_mean,
             v_top=v_top,
             v_bottom=v_bottom,
+            dtype=dtype,
+        )
+        return cls(arr, dx=dx, dz=dz)
+
+    @classmethod
+    def layered(
+        cls,
+        nx: int = 201,
+        nz: int = 51,
+        dx: float = 1.0,
+        dz: float = 1.0,
+        thicknesses: Tuple[float, ...] = (50.0, 50.0, 100.0),
+        velocities: Tuple[float, ...] = (1500.0, 2200.0, 3000.0, 4000.0),
+        dtype: Union[str, np.dtype] = np.float32,
+    ) -> "VelocityModel":
+        """Create a VelocityModel with horizontal tabular layers.
+
+        Parameters
+        ----------
+        nx : int, optional
+            Number of grid cells along x. Default is 201.
+        nz : int, optional
+            Number of grid cells along z. Default is 51.
+        dx : float, optional
+            Grid spacing along x in meters. Default is 1.0.
+        dz : float, optional
+            Grid spacing along z in meters. Default is 1.0.
+        thicknesses : tuple of float, optional
+            Layer thicknesses from top to bottom in meters. Length = len(velocities) - 1.
+        velocities : tuple of float, optional
+            Layer velocities in m/s including basement half-space.
+        dtype : str or np.dtype, optional
+            Output data type. Default is np.float32.
+
+        Returns
+        -------
+        VelocityModel
+            A new VelocityModel instance with horizontal layers.
+        """
+        arr = layered_model(
+            nx=nx,
+            nz=nz,
+            dx=dx,
+            dz=dz,
+            thicknesses=thicknesses,
+            velocities=velocities,
             dtype=dtype,
         )
         return cls(arr, dx=dx, dz=dz)

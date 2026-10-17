@@ -552,3 +552,78 @@ def heterogeneous_anomaly_model(
             smooth += padded[di : di + nx, dj : dj + nz]
     smooth /= k * k
     return np.clip(v * (1.0 + 0.05 * smooth / smooth.std()), 500.0, 6000.0).astype(dt)
+
+
+def layered_model(
+    nx: int = 201,
+    nz: int = 51,
+    dx: float = 1.0,
+    dz: float = 1.0,
+    thicknesses: Sequence[float] = (50.0, 50.0, 100.0),
+    velocities: Sequence[float] = (1500.0, 2200.0, 3000.0, 4000.0),
+    dtype: Union[str, np.dtype] = np.float32,
+) -> np.ndarray:
+    """Generate a 1D/2D tabular horizontally layered velocity model.
+
+    Creates horizontally stratified geological layers defined by explicit thicknesses
+    in meters. The last velocity in `velocities` acts as the basement half-space
+    if the model depth exceeds the cumulative thickness of the upper layers.
+
+    Parameters
+    ----------
+    nx : int, optional
+        Number of grid cells along x. Default is 201.
+    nz : int, optional
+        Number of grid cells along z. Default is 51.
+    dx : float, optional
+        Grid spacing along x in meters. Default is 1.0.
+    dz : float, optional
+        Grid spacing along z in meters. Default is 1.0.
+    thicknesses : sequence of float, optional
+        Thicknesses of the upper layers in meters. Length should be `len(velocities) - 1`.
+        Default is (50.0, 50.0, 100.0).
+    velocities : sequence of float, optional
+        Velocities of each layer from top to bottom (including basement) in m/s.
+        Default is (1500.0, 2200.0, 3000.0, 4000.0).
+    dtype : str or np.dtype, optional
+        Output NumPy floating-point precision ('f32', 'f64', np.float32, np.float64).
+        Default is np.float32.
+
+    Returns
+    -------
+    ndarray of shape (nx, nz)
+        2D horizontally layered velocity model in m/s.
+
+    Raises
+    ------
+    ValueError
+        If `dx` or `dz` are not positive, or if `len(velocities) != len(thicknesses) + 1`.
+
+    Examples
+    --------
+    >>> import seiscode_models as sm
+    >>> v = sm.layered_model(nx=50, nz=40, dx=5.0, dz=5.0, thicknesses=(50.0, 50.0), velocities=(1500.0, 2500.0, 3500.0))
+    >>> v[0, 0]
+    1500.0
+    """
+    if dx <= 0 or dz <= 0:
+        raise ValueError("Grid spacing dx and dz must be positive.")
+    if len(velocities) != len(thicknesses) + 1:
+        raise ValueError(
+            f"Expected len(velocities) == len(thicknesses) + 1, got "
+            f"{len(velocities)} velocities and {len(thicknesses)} thicknesses."
+        )
+
+    dt = parse_dtype(dtype)
+    v_out = np.full((nx, nz), velocities[-1], dtype=dt)
+
+    depth_top = 0.0
+    for thick, vel in zip(thicknesses, velocities[:-1]):
+        depth_bottom = depth_top + thick
+        k_top = int(round(depth_top / dz))
+        k_bottom = int(round(depth_bottom / dz))
+        if k_top < nz:
+            v_out[:, k_top : min(k_bottom, nz)] = vel
+        depth_top = depth_bottom
+
+    return v_out
