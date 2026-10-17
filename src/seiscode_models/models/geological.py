@@ -754,4 +754,3 @@ def add_water_bottom(
         out[mask] = v_water
 
     return out
-
