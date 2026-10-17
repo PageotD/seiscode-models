@@ -56,4 +56,3 @@ def validate_model(
         raise ValueError(f"Velocities out of range [{v_min}, {v_max}] m/s.")
     if dx <= 0 or dz <= 0:
         raise ValueError("Grid spacing dx and dz must be positive.")
-
