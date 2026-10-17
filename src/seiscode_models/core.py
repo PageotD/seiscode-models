@@ -1,12 +1,14 @@
 """Object-oriented interface for 2D subsurface velocity models."""
 
 from pathlib import Path
-from typing import Optional, Tuple, Union
+from typing import Optional, Sequence, Tuple, Union
 
 import numpy as np
 
 from .models.geological import (
+    add_water_bottom,
     checkerboard,
+    compacted_sediments,
     dipping_layers,
     faulted_layers,
     heterogeneous_anomaly_model,
@@ -112,6 +114,44 @@ class VelocityModel:
             A new VelocityModel instance with gradient velocity field.
         """
         arr = gradient_background(nx=nx, nz=nz, dx=dx, dz=dz, v0=v0, v1=v1, dtype=dtype)
+        return cls(arr, dx=dx, dz=dz)
+
+    @classmethod
+    def compacted(
+        cls,
+        nx: int = 201,
+        nz: int = 51,
+        dx: float = 1.0,
+        dz: float = 1.0,
+        v0: float = 1600.0,
+        k: float = 0.6,
+        dtype: Union[str, np.dtype] = np.float32,
+    ) -> "VelocityModel":
+        """Create a VelocityModel with sediment compaction gradient v(z) = v0 + k*z.
+
+        Parameters
+        ----------
+        nx : int, optional
+            Number of grid cells along x. Default is 201.
+        nz : int, optional
+            Number of grid cells along z. Default is 51.
+        dx : float, optional
+            Grid spacing along x in meters. Default is 1.0.
+        dz : float, optional
+            Grid spacing along z in meters. Default is 1.0.
+        v0 : float, optional
+            Velocity at surface (z=0) in m/s. Default is 1600.0.
+        k : float, optional
+            Compaction gradient in s^-1 (m/s per meter). Default is 0.6.
+        dtype : str or np.dtype, optional
+            Output data type. Default is np.float32.
+
+        Returns
+        -------
+        VelocityModel
+            A new VelocityModel instance with compacted sediments velocity field.
+        """
+        arr = compacted_sediments(nx=nx, nz=nz, dx=dx, dz=dz, v0=v0, k=k, dtype=dtype)
         return cls(arr, dx=dx, dz=dz)
 
     @classmethod
@@ -644,6 +684,35 @@ class VelocityModel:
             dx=self._dx,
             dz=self._dz,
             ix_fault=ix_fault,
+        )
+        return self
+
+    def add_water_layer(
+        self,
+        water_depth: Union[float, Sequence[float], np.ndarray] = 100.0,
+        v_water: float = 1500.0,
+    ) -> "VelocityModel":
+        """Impose an acoustic water layer (bathymetry) at the top of the model in place.
+
+        Parameters
+        ----------
+        water_depth : float or sequence of float or ndarray, optional
+            Seafloor depth in meters. Can be a scalar for a flat sea bottom or a 1D
+            sequence of length `nx` for an irregular bathymetric profile. Default is 100.0.
+        v_water : float, optional
+            Water acoustic velocity in m/s. Default is 1500.0.
+
+        Returns
+        -------
+        VelocityModel
+            Self reference for fluent method chaining.
+        """
+        self._data = add_water_bottom(
+            self._data,
+            water_depth=water_depth,
+            v_water=v_water,
+            dx=self._dx,
+            dz=self._dz,
         )
         return self
 

@@ -627,3 +627,131 @@ def layered_model(
         depth_top = depth_bottom
 
     return v_out
+
+
+def compacted_sediments(
+    nx: int = 201,
+    nz: int = 51,
+    dx: float = 1.0,
+    dz: float = 1.0,
+    v0: float = 1600.0,
+    k: float = 0.6,
+    dtype: Union[str, np.dtype] = np.float32,
+) -> np.ndarray:
+    r"""Generate a realistic sediment compaction velocity model :math:`v(z) = v_0 + k \cdot z`.
+
+    Models continuous mechanical compaction in sedimentary basins where velocity
+    increases linearly with depth :math:`z` at compaction gradient rate :math:`k` (s\ :sup:`-1`).
+
+    Parameters
+    ----------
+    nx : int, optional
+        Number of grid cells along x. Default is 201.
+    nz : int, optional
+        Number of grid cells along z. Default is 51.
+    dx : float, optional
+        Grid spacing along x in meters. Default is 1.0.
+    dz : float, optional
+        Grid spacing along z in meters. Default is 1.0.
+    v0 : float, optional
+        Velocity at the top surface in m/s. Default is 1600.0.
+    k : float, optional
+        Compaction velocity gradient in s\ :sup:`-1` (m/s per meter of depth). Default is 0.6.
+    dtype : str or np.dtype, optional
+        Output NumPy floating-point precision ('f32', 'f64', np.float32, np.float64).
+        Default is np.float32.
+
+    Returns
+    -------
+    ndarray of shape (nx, nz)
+        2D compacted sediment velocity field in m/s.
+
+    Raises
+    ------
+    ValueError
+        If `dx` or `dz` are not positive.
+
+    Examples
+    --------
+    >>> import seiscode_models as sm
+    >>> v = sm.compacted_sediments(nx=100, nz=50, dx=10.0, dz=10.0, v0=1500.0, k=0.5)
+    >>> v[0, 0]
+    1500.0
+    >>> v[0, -1]  # depth = 490m -> 1500 + 0.5 * 490 = 1745 m/s
+    1745.0
+    """
+    if dx <= 0 or dz <= 0:
+        raise ValueError("Grid spacing dx and dz must be positive.")
+    dt = parse_dtype(dtype)
+    z = (np.arange(nz, dtype=dt) * dz)[None, :]
+    v_col = v0 + k * z
+    return np.broadcast_to(v_col, (nx, nz)).copy()
+
+
+def add_water_bottom(
+    v: np.ndarray,
+    water_depth: Union[float, Sequence[float], np.ndarray] = 100.0,
+    v_water: float = 1500.0,
+    dx: float = 1.0,
+    dz: float = 1.0,
+) -> np.ndarray:
+    """Impose a water layer (bathymetry) at the top of an existing velocity model.
+
+    Sets all velocities above the seafloor depth to the constant water velocity `v_water`.
+    Accepts either a flat water depth in meters, or a 1D bathymetric depth profile `z_seafloor(x)`.
+
+    Parameters
+    ----------
+    v : ndarray of shape (nx, nz)
+        Input subsurface velocity model to modify (not modified in place).
+    water_depth : float or sequence of float or 1D ndarray, optional
+        Depth of the seabed in meters. Can be a single float (flat water bottom)
+        or a sequence of length `nx` representing irregular bathymetry. Default is 100.0.
+    v_water : float, optional
+        Acoustic velocity in water in m/s. Default is 1500.0.
+    dx : float, optional
+        Grid spacing along x in meters. Default is 1.0.
+    dz : float, optional
+        Grid spacing along z in meters. Default is 1.0.
+
+    Returns
+    -------
+    ndarray of shape (nx, nz)
+        A copy of `v` with the water layer imposed above the seafloor.
+
+    Raises
+    ------
+    ValueError
+        If `dx` or `dz` are not positive, or if `water_depth` sequence length != `nx`.
+
+    Examples
+    --------
+    >>> import seiscode_models as sm
+    >>> bg = sm.gradient_background(50, 40, dx=5.0, dz=5.0, v0=2000.0, v1=4000.0)
+    >>> marine = sm.add_water_bottom(bg, water_depth=50.0, v_water=1500.0, dx=5.0, dz=5.0)
+    >>> marine[0, 0]
+    1500.0
+    """
+    if dx <= 0 or dz <= 0:
+        raise ValueError("Grid spacing dx and dz must be positive.")
+    nx, nz = v.shape
+    dt = v.dtype
+    out = v.copy()
+
+    if np.isscalar(water_depth):
+        k_water = int(round(float(water_depth) / dz))
+        k_clamp = max(0, min(k_water, nz))
+        out[:, :k_clamp] = v_water
+    else:
+        bathymetry = np.asarray(water_depth, dtype=dt)
+        if bathymetry.ndim != 1 or bathymetry.size != nx:
+            raise ValueError(
+                f"Bathymetry profile length ({bathymetry.size}) must match model nx ({nx})."
+            )
+        k_water = np.clip(np.round(bathymetry / dz).astype(int), 0, nz)
+        z_indices = np.arange(nz)[None, :]
+        mask = z_indices < k_water[:, None]
+        out[mask] = v_water
+
+    return out
+
