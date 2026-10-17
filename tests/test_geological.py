@@ -46,3 +46,77 @@ class TestGeologicalModels:
         v_cb = sm.checkerboard(nx=40, nz=40, dx=2.0, dz=2.0, cell_x=20.0, cell_z=10.0)
         assert v_cb.shape == (40, 40)
         sm.validate_model(v_cb, dx=2.0, dz=2.0)
+
+    def test_layered_model(self):
+        v = sm.layered_model(
+            nx=30,
+            nz=50,
+            dx=2.0,
+            dz=2.0,
+            thicknesses=(20.0, 30.0),
+            velocities=(1500.0, 2500.0, 3500.0),
+            dtype="f32",
+        )
+        assert v.shape == (30, 50)
+        assert v.dtype == np.float32
+        # layer 1: 0 to 20m -> cells 0 to 10
+        assert v[0, 0] == 1500.0
+        assert v[0, 9] == 1500.0
+        # layer 2: 20 to 50m -> cells 10 to 25
+        assert v[0, 10] == 2500.0
+        assert v[0, 24] == 2500.0
+        # basement: 50m to 100m -> cells 25 to 50
+        assert v[0, 25] == 3500.0
+        assert v[0, 49] == 3500.0
+
+        # Test VelocityModel.layered
+        model = sm.VelocityModel.layered(
+            nx=30,
+            nz=50,
+            dx=2.0,
+            dz=2.0,
+            thicknesses=(20.0, 30.0),
+            velocities=(1500.0, 2500.0, 3500.0),
+        )
+        assert isinstance(model, sm.VelocityModel)
+        assert np.array_equal(model.data, v)
+
+    def test_layered_model_invalid_lengths(self):
+        with pytest.raises(ValueError, match="Expected len"):
+            sm.layered_model(thicknesses=(50.0,), velocities=(1500.0, 2000.0, 3000.0))
+
+    def test_compacted_sediments(self):
+        v = sm.compacted_sediments(nx=40, nz=30, dx=5.0, dz=10.0, v0=1500.0, k=0.5)
+        assert v.shape == (40, 30)
+        assert v[0, 0] == 1500.0
+        # at row 10: depth = 10 * 10 = 100m -> 1500 + 0.5 * 100 = 1550 m/s
+        assert v[0, 10] == 1550.0
+
+        model = sm.VelocityModel.compacted(
+            nx=40, nz=30, dx=5.0, dz=10.0, v0=1500.0, k=0.5
+        )
+        assert isinstance(model, sm.VelocityModel)
+        assert np.array_equal(model.data, v)
+
+    def test_add_water_bottom(self):
+        bg = sm.gradient_background(50, 40, dx=5.0, dz=5.0, v0=2000.0, v1=4000.0)
+        # Flat water depth = 25m (5 cells)
+        marine = sm.add_water_bottom(
+            bg, water_depth=25.0, v_water=1500.0, dx=5.0, dz=5.0
+        )
+        assert np.all(marine[:, :5] == 1500.0)
+        assert np.all(marine[:, 5:] > 1500.0)
+
+        # Profile bathymetry
+        depths = np.linspace(10.0, 50.0, 50)
+        marine_bathy = sm.add_water_bottom(
+            bg, water_depth=depths, v_water=1480.0, dx=5.0, dz=5.0
+        )
+        assert marine_bathy[0, 0] == 1480.0
+        assert marine_bathy[0, 3] > 1480.0
+
+        # Method chaining on VelocityModel
+        model = sm.VelocityModel.gradient(nx=50, nz=40, dx=5.0, dz=5.0).add_water_layer(
+            water_depth=25.0
+        )
+        assert np.all(model.data[:, :5] == 1500.0)

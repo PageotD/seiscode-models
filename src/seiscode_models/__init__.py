@@ -2,10 +2,13 @@
 
 from .core import VelocityModel
 from .models.geological import (
+    add_water_bottom,
     checkerboard,
+    compacted_sediments,
     dipping_layers,
     faulted_layers,
     heterogeneous_anomaly_model,
+    layered_model,
     low_velocity_layer,
     salt_dome,
     sinusoidal_interface,
@@ -45,6 +48,9 @@ __all__ = [
     "dipping_layers",
     "sinusoidal_interface",
     "faulted_layers",
+    "layered_model",
+    "compacted_sediments",
+    "add_water_bottom",
     "checkerboard",
     "salt_dome",
     "low_velocity_layer",
