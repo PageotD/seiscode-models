@@ -85,7 +85,12 @@ class VelocityModel:
         tuple of float
             (0.0, (nx - 1) * dx, (nz - 1) * dz, 0.0) in meters.
         """
-        return (0.0, float((self.nx - 1) * self._dx), float((self.nz - 1) * self._dz), 0.0)
+        return (
+            0.0,
+            float((self.nx - 1) * self._dx),
+            float((self.nz - 1) * self._dz),
+            0.0,
+        )
 
     @property
     def x_coords(self) -> np.ndarray:
@@ -115,7 +120,6 @@ class VelocityModel:
         """
         min_spacing = min(self._dx, self._dz)
         return float(cfl * min_spacing / (self.vmax * np.sqrt(2.0)))
-
 
     # --- Factory Methods (Constructeurs géologiques orientés objet) ---
 
@@ -842,7 +846,6 @@ class VelocityModel:
         """
         self._data = np.pad(self._data, npad, mode=mode)
         return self
-
 
     # --- Utility Methods ---
     @classmethod

@@ -230,7 +230,9 @@ class TestVelocityModelOOP:
         assert model1 != model2
 
     def test_grid_properties_and_cfl(self):
-        model = sm.VelocityModel.gradient(nx=21, nz=11, dx=10.0, dz=5.0, v0=1000.0, v1=2000.0)
+        model = sm.VelocityModel.gradient(
+            nx=21, nz=11, dx=10.0, dz=5.0, v0=1000.0, v1=2000.0
+        )
         assert model.extent == (0.0, 200.0, 50.0, 0.0)
         assert len(model.x_coords) == 21
         assert model.x_coords[-1] == 200.0
@@ -247,4 +249,3 @@ class TestVelocityModelOOP:
         assert model.nx == 50
         assert model.nz == 40
         assert model.data.shape == (50, 40)
-
