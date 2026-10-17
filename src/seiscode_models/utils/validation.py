@@ -10,21 +10,39 @@ def validate_model(
     v_min: float = 0.0,
     v_max: float = 1.0e12,
 ) -> None:
-    """Validate a velocity model array and its parameters.
+    """Validate a velocity model array and its spatial parameters.
+
+    Checks that the model is a 2D NumPy array, that its data type is strictly
+    single (float32) or double (float64) precision, that all values are finite
+    (no NaN or Inf), that velocities stay within physical bounds [v_min, v_max],
+    and that grid intervals are positive.
 
     Parameters
     ----------
-    v : ndarray
-        Velocity model array (nx, nz).
-    dx, dz : float
-        Grid spacing in meters.
-    v_min, v_max : float
-        Acceptable velocity limits in m/s.
+    v : ndarray of shape (nx, nz)
+        2D velocity field array in m/s.
+    dx : float, optional
+        Grid spacing along horizontal x-axis in meters. Default is 1.0.
+    dz : float, optional
+        Grid spacing along vertical z-axis in meters. Default is 1.0.
+    v_min : float, optional
+        Minimum allowable physical velocity in m/s. Default is 0.0.
+    v_max : float, optional
+        Maximum allowable physical velocity in m/s. Default is 1.0e12.
 
     Raises
     ------
     ValueError
-        If the model structure, dtype, or bounds are invalid.
+        If `v` is not a 2D NumPy array, if its dtype is not float32 or float64,
+        if non-finite values (NaN/Inf) exist, if velocities fall outside [v_min, v_max],
+        or if `dx`/`dz` are not positive.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import seiscode_models as sm
+    >>> arr = np.ones((10, 10), dtype=np.float32) * 2000.0
+    >>> sm.validate_model(arr, dx=5.0, dz=5.0)  # Passes silently
     """
     if not isinstance(v, np.ndarray):
         raise ValueError("Model must be a NumPy array.")

@@ -18,31 +18,48 @@ def dipping_layers(
     thickness: float = 10.0,
     dtype: Union[str, np.dtype] = np.float32,
 ) -> np.ndarray:
-    """Generate dipping planar layers with the same dip angle.
+    """Generate dipping planar layers with a uniform dip angle.
+
+    Creates a 2D velocity model composed of planar geological strata dipping
+    at an angle `dip_deg`. Depths are referenced relative to the horizontal
+    midpoint of the model.
 
     Parameters
     ----------
     nx : int, optional
-        Number of grid cells along x. Default is 201.
+        Number of grid cells along horizontal x-axis. Default is 201.
     nz : int, optional
-        Number of grid cells along z. Default is 51.
+        Number of grid cells along vertical z-axis (depth). Default is 51.
     dx : float, optional
         Grid spacing along x in meters. Default is 1.0.
     dz : float, optional
         Grid spacing along z in meters. Default is 1.0.
     v : sequence of float, optional
-        Velocities of layers from top to bottom in m/s.
+        Layer velocities from top to bottom in m/s. Default is (1800.0, 2400.0, 3200.0, 4200.0).
     dip_deg : float, optional
-        Dip angle in degrees. Default is 8.0.
+        Dip angle in degrees (positive dips downward towards increasing x). Default is 8.0.
     thickness : float, optional
-        Thickness of each dipping layer in meters. Default is 10.0.
+        Perpendicular or vertical layer thickness in meters. Default is 10.0.
     dtype : str or np.dtype, optional
-        Output data type. Default is np.float32.
+        Output NumPy floating-point precision ('f32', 'f64', np.float32, np.float64).
+        Default is np.float32.
 
     Returns
     -------
-    ndarray (nx, nz)
-        Dipping layers velocity model.
+    ndarray of shape (nx, nz)
+        2D velocity field in m/s with the specified dtype.
+
+    Raises
+    ------
+    ValueError
+        If `dx` or `dz` are not strictly positive.
+
+    Examples
+    --------
+    >>> import seiscode_models as sm
+    >>> v = sm.dipping_layers(nx=100, nz=50, dx=5.0, dz=5.0, dip_deg=12.0)
+    >>> v.shape
+    (100, 50)
     """
     if dx <= 0 or dz <= 0:
         raise ValueError("Grid spacing dx and dz must be positive.")
@@ -73,7 +90,10 @@ def sinusoidal_interface(
     v_bottom: float = 3500.0,
     dtype: Union[str, np.dtype] = np.float32,
 ) -> np.ndarray:
-    """Generate two layers separated by a sinusoidal interface.
+    """Generate a two-layer velocity model separated by a sinusoidal undulating interface.
+
+    Simulates folded strata or an undulating basement boundary defined by:
+    ``z(x) = z_mean + amplitude * sin(2 * pi * x / period)``.
 
     Parameters
     ----------
@@ -88,20 +108,33 @@ def sinusoidal_interface(
     period : float, optional
         Spatial wavelength of the sinusoid in meters. Default is 100.0.
     amplitude : float, optional
-        Amplitude of the interface oscillation in meters. Default is 8.0.
+        Peak amplitude of the interface oscillation in meters. Default is 8.0.
     z_mean : float, optional
-        Mean depth of the interface in meters. Default is 0.45 * (nz * dz).
+        Mean depth of the interface in meters. Defaults to 45% of total depth (``0.45 * nz * dz``).
     v_top : float, optional
-        Velocity of upper layer in m/s. Default is 2000.0.
+        Velocity of the upper medium in m/s. Default is 2000.0.
     v_bottom : float, optional
-        Velocity of lower layer in m/s. Default is 3500.0.
+        Velocity of the lower medium in m/s. Default is 3500.0.
     dtype : str or np.dtype, optional
-        Output data type. Default is np.float32.
+        Output NumPy floating-point precision ('f32', 'f64', np.float32, np.float64).
+        Default is np.float32.
 
     Returns
     -------
-    ndarray (nx, nz)
-        Sinusoidal interface velocity model.
+    ndarray of shape (nx, nz)
+        2D velocity field in m/s with the specified dtype.
+
+    Raises
+    ------
+    ValueError
+        If `dx` or `dz` are not strictly positive.
+
+    Examples
+    --------
+    >>> import seiscode_models as sm
+    >>> v = sm.sinusoidal_interface(nx=150, nz=60, dx=10.0, dz=5.0, period=500.0, amplitude=50.0)
+    >>> v.shape
+    (150, 60)
     """
     if dx <= 0 or dz <= 0:
         raise ValueError("Grid spacing dx and dz must be positive.")
@@ -130,7 +163,10 @@ def faulted_layers(
     dtype: Union[str, np.dtype] = np.float32,
     ix_fault: Optional[int] = None,
 ) -> np.ndarray:
-    """Generate stratigraphic layers with a normal fault.
+    """Generate stratified horizontal layers offset by a vertical normal fault.
+
+    Creates horizontally stratified layers and shifts the layers across a vertical
+    fault line located at `x_fault`.
 
     Parameters
     ----------
@@ -143,20 +179,35 @@ def faulted_layers(
     dz : float, optional
         Grid spacing along z in meters. Default is 1.0.
     x_fault : float, optional
-        Horizontal position of the fault in meters. If None and ix_fault is None, defaults to 0.6 * (nx * dx).
+        Horizontal position of the fault in meters. If None and `ix_fault` is None,
+        defaults to ``120 * dx`` (or model midpoint).
     throw : float, optional
-        Vertical fault throw in meters. Default is 8.0 * dz.
+        Vertical fault displacement (throw) in meters. Positive values displace the downthrown block.
+        Default is ``8.0 * dz``.
     v : sequence of float, optional
-        Velocities of layers from top to bottom in m/s.
+        Layer velocities from top to bottom in m/s. Default is (1800.0, 2400.0, 3200.0, 4200.0).
     dtype : str or np.dtype, optional
-        Output data type. Default is np.float32.
+        Output NumPy floating-point precision ('f32', 'f64', np.float32, np.float64).
+        Default is np.float32.
     ix_fault : int, optional
-        Deprecated: column index of the fault. Use x_fault instead.
+        Deprecated: column index of the fault. Prefer using `x_fault` in physical units (meters).
 
     Returns
     -------
-    ndarray (nx, nz)
-        Faulted layers velocity model.
+    ndarray of shape (nx, nz)
+        2D velocity model with faulted stratigraphic layers.
+
+    Raises
+    ------
+    ValueError
+        If `v` contains fewer than 2 velocities, or if `dx`/`dz` are not positive.
+
+    Examples
+    --------
+    >>> import seiscode_models as sm
+    >>> v = sm.faulted_layers(nx=120, nz=60, dx=10.0, dz=10.0, x_fault=600.0, throw=50.0)
+    >>> v.shape
+    (120, 60)
     """
     if dx <= 0 or dz <= 0:
         raise ValueError("Grid spacing dx and dz must be positive.")
@@ -200,7 +251,10 @@ def checkerboard(
     dv: float = 600.0,
     dtype: Union[str, np.dtype] = np.float32,
 ) -> np.ndarray:
-    """Generate a checkerboard pattern for resolution testing.
+    """Generate an alternating checkerboard pattern for seismic resolution tests.
+
+    Alternates positive and negative velocity perturbations (+dv / -dv) around
+    a background velocity v0 in rectangular cells of dimension `cell_x` by `cell_z`.
 
     Parameters
     ----------
@@ -213,22 +267,35 @@ def checkerboard(
     dz : float, optional
         Grid spacing along z in meters. Default is 1.0.
     cell_x : float, optional
-        Horizontal cell size in meters. Default is 20.0 * dx.
+        Horizontal dimension of each checkerboard tile in meters. Default is ``20.0 * dx``.
     cell_z : float, optional
-        Vertical cell size in meters. Default is 20.0 * dz.
+        Vertical dimension of each checkerboard tile in meters. Default is ``20.0 * dz``.
     cell : float, optional
-        Uniform cell size (in meters if dx/dz provided, else cells).
+        Deprecated uniform cell size in meters (or cells if dx=1, dz=1).
     v0 : float, optional
-        Background velocity in m/s. Default is 3000.0.
+        Base background velocity in m/s. Default is 3000.0.
     dv : float, optional
         Velocity perturbation amplitude in m/s. Default is 600.0.
     dtype : str or np.dtype, optional
-        Output data type. Default is np.float32.
+        Output NumPy floating-point precision ('f32', 'f64', np.float32, np.float64).
+        Default is np.float32.
 
     Returns
     -------
-    ndarray (nx, nz)
-        Checkerboard velocity model.
+    ndarray of shape (nx, nz)
+        Checkerboard velocity model alternating between `v0 + dv` and `v0 - dv`.
+
+    Raises
+    ------
+    ValueError
+        If `dx` or `dz` are not strictly positive.
+
+    Examples
+    --------
+    >>> import seiscode_models as sm
+    >>> v = sm.checkerboard(nx=100, nz=100, dx=5.0, dz=5.0, cell_x=50.0, cell_z=50.0)
+    >>> v.min(), v.max()
+    (2400.0, 3600.0)
     """
     if dx <= 0 or dz <= 0:
         raise ValueError("Grid spacing dx and dz must be positive.")
@@ -258,7 +325,10 @@ def salt_dome(
     v_sed: float = 2500.0,
     dtype: Union[str, np.dtype] = np.float32,
 ) -> np.ndarray:
-    """Generate a salt dome model with semi-elliptical shape.
+    """Generate a realistic salt dome intrusion embedded in compacted sediments.
+
+    Creates a background gradient representing sedimentary compaction, intruded
+    by a semi-elliptical high-velocity salt body rooted at the base of the model.
 
     Parameters
     ----------
@@ -271,20 +341,33 @@ def salt_dome(
     dz : float, optional
         Grid spacing along z in meters. Default is 1.0.
     cx : float, optional
-        Horizontal center position of dome in meters. Default is 140.0 * dx.
+        Horizontal center position of the salt dome in meters. Default is ``140.0 * dx``.
     width : float, optional
-        Horizontal semi-axis width in meters. Default is 40.0 * dx.
+        Horizontal half-width (semi-axis) of the salt body in meters. Default is ``40.0 * dx``.
     v_salt : float, optional
-        Velocity inside salt body in m/s. Default is 4500.0.
+        Constant velocity inside the salt dome in m/s. Default is 4500.0.
     v_sed : float, optional
-        Sediment velocity at surface in m/s. Default is 2500.0.
+        Sediment velocity at the surface in m/s (increases with depth to 4000 m/s). Default is 2500.0.
     dtype : str or np.dtype, optional
-        Output data type. Default is np.float32.
+        Output NumPy floating-point precision ('f32', 'f64', np.float32, np.float64).
+        Default is np.float32.
 
     Returns
     -------
-    ndarray (nx, nz)
-        Salt dome velocity model.
+    ndarray of shape (nx, nz)
+        2D salt dome velocity model.
+
+    Raises
+    ------
+    ValueError
+        If `dx` or `dz` are not strictly positive.
+
+    Examples
+    --------
+    >>> import seiscode_models as sm
+    >>> v = sm.salt_dome(nx=200, nz=80, dx=10.0, dz=10.0, cx=1000.0, width=300.0)
+    >>> v.shape
+    (200, 80)
     """
     if dx <= 0 or dz <= 0:
         raise ValueError("Grid spacing dx and dz must be positive.")
@@ -322,7 +405,10 @@ def low_velocity_layer(
     dtype: Union[str, np.dtype] = np.float32,
     k0: Optional[int] = None,
 ) -> np.ndarray:
-    """Generate a model with a buried low-velocity channel.
+    """Generate a velocity model with a buried low-velocity layer or waveguide channel.
+
+    Embeds a low-velocity horizontal layer (e.g. gas sand, weathered layer, or deep waveguide)
+    within a linear gradient background.
 
     Parameters
     ----------
@@ -335,20 +421,33 @@ def low_velocity_layer(
     dz : float, optional
         Grid spacing along z in meters. Default is 1.0.
     z0 : float, optional
-        Top depth of the low velocity layer in meters. Default is 20.0 * dz.
+        Top depth of the low-velocity layer in meters. Default is ``20.0 * dz``.
     thickness : float, optional
-        Layer thickness in meters. Default is 8.0 * dz.
+        Thickness of the low-velocity layer in meters. Default is ``8.0 * dz``.
     v_slow : float, optional
-        Velocity in the low-velocity channel in m/s. Default is 1200.0.
+        Constant velocity inside the layer in m/s. Default is 1200.0.
     dtype : str or np.dtype, optional
-        Output data type. Default is np.float32.
+        Output NumPy floating-point precision ('f32', 'f64', np.float32, np.float64).
+        Default is np.float32.
     k0 : int, optional
-        Deprecated: row cell index of layer top. Use z0 instead.
+        Deprecated: vertical grid index of the layer top. Use `z0` in meters instead.
 
     Returns
     -------
-    ndarray (nx, nz)
-        Low velocity layer model.
+    ndarray of shape (nx, nz)
+        2D velocity model containing the buried low-velocity channel.
+
+    Raises
+    ------
+    ValueError
+        If `dx` or `dz` are not strictly positive.
+
+    Examples
+    --------
+    >>> import seiscode_models as sm
+    >>> v = sm.low_velocity_layer(nx=100, nz=50, dx=10.0, dz=10.0, z0=200.0, thickness=80.0)
+    >>> v.min()
+    1200.0
     """
     if dx <= 0 or dz <= 0:
         raise ValueError("Grid spacing dx and dz must be positive.")
@@ -376,7 +475,11 @@ def heterogeneous_anomaly_model(
     seed: int = 7,
     dtype: Union[str, np.dtype] = np.float32,
 ) -> np.ndarray:
-    """Generate a complex synthetic model.
+    """Generate a complex synthetic model featuring multiple Gaussian anomalies and stochastic clutter.
+
+    Combines a vertical linear gradient, positive and negative Gaussian anomalies,
+    and a smoothed random Gaussian noise perturbation. Frequently used as a benchmark
+    for Full Waveform Inversion (FWI) algorithms.
 
     Parameters
     ----------
@@ -389,14 +492,27 @@ def heterogeneous_anomaly_model(
     dz : float, optional
         Grid spacing along z in meters. Default is 1.0.
     seed : int, optional
-        Random seed for reproducibility. Default is 7.
+        Random seed for the stochastic noise generation. Default is 7.
     dtype : str or np.dtype, optional
-        Output data type. Default is np.float32.
+        Output NumPy floating-point precision ('f32', 'f64', np.float32, np.float64).
+        Default is np.float32.
 
     Returns
     -------
-    ndarray (nx, nz)
-        Complex heterogeneous velocity model.
+    ndarray of shape (nx, nz)
+        Complex heterogeneous velocity model clipped to [500.0, 6000.0] m/s.
+
+    Raises
+    ------
+    ValueError
+        If `dx` or `dz` are not strictly positive.
+
+    Examples
+    --------
+    >>> import seiscode_models as sm
+    >>> v = sm.heterogeneous_anomaly_model(nx=200, nz=80, seed=42)
+    >>> v.shape
+    (200, 80)
     """
     if dx <= 0 or dz <= 0:
         raise ValueError("Grid spacing dx and dz must be positive.")
