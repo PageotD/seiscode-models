@@ -1,5 +1,7 @@
 """Visualization utilities compatible with Python 3.8+."""
 
+from typing import Any, Optional, Tuple
+
 import numpy as np
 
 from .validation import validate_model
@@ -10,7 +12,8 @@ def quick_view(
     dx: float = 1.0,
     dz: float = 1.0,
     title: str = "Velocity model",
-) -> None:
+    ax: Optional[Any] = None,
+) -> Tuple[Any, Any]:
     """Display a 2D velocity field with depth positive downward using matplotlib.
 
     Renders the velocity model with correct physical coordinates (extent in meters),
@@ -26,6 +29,14 @@ def quick_view(
         Grid spacing along vertical z-axis in meters. Default is 1.0.
     title : str, optional
         Title string displayed on the plot figure. Default is "Velocity model".
+    ax : matplotlib.axes.Axes, optional
+        Pre-existing Matplotlib Axes to draw the velocity model into. If None,
+        a new figure and axes are created and `plt.show()` is called. Default is None.
+
+    Returns
+    -------
+    tuple of (matplotlib.figure.Figure, matplotlib.axes.Axes)
+        Figure and Axes containing the rendered model plot.
 
     Raises
     ------
@@ -36,8 +47,14 @@ def quick_view(
 
     validate_model(velocities, dx=dx, dz=dz)
 
+    show = False
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(12, 6))
+        show = True
+    else:
+        fig = ax.figure
+
     nx, nz = velocities.shape
-    fig, ax = plt.subplots(figsize=(12, 6))
     im = ax.imshow(
         velocities.T,
         extent=[0, (nx - 1) * dx, (nz - 1) * dz, 0],
@@ -48,4 +65,6 @@ def quick_view(
     ax.set_ylabel("Depth z (m)")
     ax.set_title(title)
     fig.colorbar(im, ax=ax, label="Velocity (m/s)")
-    plt.show()
+    if show:
+        plt.show()
+    return fig, ax

@@ -8,14 +8,14 @@ def validate_model(
     dx: float = 1.0,
     dz: float = 1.0,
     v_min: float = 0.0,
-    v_max: float = 1.0e12,
+    v_max: float = 15000.0,
 ) -> None:
     """Validate a velocity model array and its spatial parameters.
 
-    Checks that the model is a 2D NumPy array, that its data type is strictly
-    single (float32) or double (float64) precision, that all values are finite
-    (no NaN or Inf), that velocities stay within physical bounds [v_min, v_max],
-    and that grid intervals are positive.
+    Checks that the model is a 2D NumPy array with non-zero dimensions, that its
+    data type is strictly single (float32) or double (float64) precision, that
+    all values are finite (no NaN or Inf), that velocities stay within physical
+    bounds [v_min, v_max], and that grid intervals are positive.
 
     Parameters
     ----------
@@ -28,14 +28,14 @@ def validate_model(
     v_min : float, optional
         Minimum allowable physical velocity in m/s. Default is 0.0.
     v_max : float, optional
-        Maximum allowable physical velocity in m/s. Default is 1.0e12.
+        Maximum allowable physical velocity in m/s. Default is 15000.0.
 
     Raises
     ------
     ValueError
-        If `v` is not a 2D NumPy array, if its dtype is not float32 or float64,
-        if non-finite values (NaN/Inf) exist, if velocities fall outside [v_min, v_max],
-        or if `dx`/`dz` are not positive.
+        If `v` is not a 2D NumPy array with nx > 0 and nz > 0, if its dtype is
+        not float32 or float64, if non-finite values (NaN/Inf) exist, if velocities
+        fall outside [v_min, v_max], or if `dx`/`dz` are not strictly positive.
 
     Examples
     --------
@@ -48,6 +48,10 @@ def validate_model(
         raise ValueError("Model must be a NumPy array.")
     if v.ndim != 2:
         raise ValueError(f"Model must be 2D, got {v.ndim}D.")
+    if v.shape[0] <= 0 or v.shape[1] <= 0:
+        raise ValueError(
+            f"Model dimensions must be strictly positive, got shape {v.shape}."
+        )
     if v.dtype not in (np.dtype(np.float32), np.dtype(np.float64)):
         raise ValueError(f"Model dtype must be float32 or float64, got {v.dtype}.")
     if not np.all(np.isfinite(v)):

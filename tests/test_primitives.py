@@ -106,3 +106,44 @@ class TestValidation:
         v = sm.gradient_background(20, 20).astype(np.int32)
         with pytest.raises(ValueError, match="Model dtype must be float32 or float64"):
             sm.validate_model(v)
+
+    def test_not_numpy_array(self):
+        with pytest.raises(ValueError, match="Model must be a NumPy array"):
+            sm.validate_model([[1000.0, 2000.0]])
+
+    def test_invalid_dimensions(self):
+        v_1d = np.ones(10, dtype=np.float32)
+        with pytest.raises(ValueError, match="Model must be 2D"):
+            sm.validate_model(v_1d)
+
+        v_empty = np.empty((0, 10), dtype=np.float32)
+        with pytest.raises(
+            ValueError, match="Model dimensions must be strictly positive"
+        ):
+            sm.validate_model(v_empty)
+
+    def test_non_finite_values(self):
+        v = np.full((10, 10), 2000.0, dtype=np.float32)
+        v[2, 2] = np.nan
+        with pytest.raises(ValueError, match="contains non-finite values"):
+            sm.validate_model(v)
+
+        v[2, 2] = np.inf
+        with pytest.raises(ValueError, match="contains non-finite values"):
+            sm.validate_model(v)
+
+    def test_velocity_range(self):
+        v_neg = np.full((10, 10), -100.0, dtype=np.float32)
+        with pytest.raises(ValueError, match="Velocities out of range"):
+            sm.validate_model(v_neg)
+
+        v_too_fast = np.full((10, 10), 20000.0, dtype=np.float32)
+        with pytest.raises(ValueError, match="Velocities out of range"):
+            sm.validate_model(v_too_fast)
+
+    def test_invalid_grid_spacing(self):
+        v = np.full((10, 10), 2000.0, dtype=np.float32)
+        with pytest.raises(ValueError, match="Grid spacing dx and dz must be positive"):
+            sm.validate_model(v, dx=0.0)
+        with pytest.raises(ValueError, match="Grid spacing dx and dz must be positive"):
+            sm.validate_model(v, dz=-2.0)

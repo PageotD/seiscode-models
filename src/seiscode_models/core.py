@@ -1,7 +1,7 @@
 """Object-oriented interface for 2D subsurface velocity models."""
 
 from pathlib import Path
-from typing import Optional, Sequence, Tuple, Union
+from typing import Any, Optional, Sequence, Tuple, Union
 
 import numpy as np
 
@@ -37,12 +37,13 @@ class VelocityModel:
         Parameters
         ----------
         data : ndarray (nx, nz)
-            Velocity model array in m/s.
+            Velocity model array in m/s. A copy of the array is made to prevent
+            aliasing and unwanted mutations from external references.
         dx, dz : float, optional
             Grid spacing in meters. Default is 1.0.
         """
         validate_model(data, dx=dx, dz=dz)
-        self._data: np.ndarray = data
+        self._data: np.ndarray = np.array(data, copy=True)
         self._dx: float = float(dx)
         self._dz: float = float(dz)
 
@@ -855,6 +856,60 @@ class VelocityModel:
         self._data = np.pad(self._data, npad, mode=mode)
         return self
 
+    def unpad(
+        self,
+        npad: Union[int, Tuple[int, int], Tuple[Tuple[int, int], Tuple[int, int]]] = 20,
+    ) -> "VelocityModel":
+        """Remove boundary padding in place, recovering the inner physical model.
+
+        Parameters
+        ----------
+        npad : int or tuple of ints, optional
+            Number of cells to trim from edges. Can be:
+            - int: same number of cells removed on all 4 boundaries.
+            - (pad_x, pad_z): symmetric padding along x and z.
+            - ((pad_x_left, pad_x_right), (pad_z_top, pad_z_bottom)): distinct padding per side.
+            Default is 20.
+
+        Returns
+        -------
+        VelocityModel
+            Self reference for fluent method chaining.
+
+        Raises
+        ------
+        ValueError
+            If padding values are negative or result in non-positive dimensions.
+        """
+        if isinstance(npad, int):
+            px_left = px_right = pz_top = pz_bottom = npad
+        elif len(npad) == 2 and isinstance(npad[0], int) and isinstance(npad[1], int):
+            px_left = px_right = int(npad[0])
+            pz_top = pz_bottom = int(npad[1])
+        elif (
+            len(npad) == 2
+            and hasattr(npad[0], "__len__")
+            and hasattr(npad[1], "__len__")
+        ):
+            px_left, px_right = int(npad[0][0]), int(npad[0][1])
+            pz_top, pz_bottom = int(npad[1][0]), int(npad[1][1])
+        else:
+            raise ValueError(f"Invalid npad format: {npad}")
+
+        if px_left < 0 or px_right < 0 or pz_top < 0 or pz_bottom < 0:
+            raise ValueError(f"Padding values must be non-negative, got {npad}.")
+
+        end_x = self.nx - px_right
+        end_z = self.nz - pz_bottom
+
+        if px_left >= end_x or pz_top >= end_z:
+            raise ValueError(
+                f"Padding ({px_left}+{px_right}, {pz_top}+{pz_bottom}) exceeds model shape ({self.nx}, {self.nz})."
+            )
+
+        self._data = self._data[px_left:end_x, pz_top:end_z].copy()
+        return self
+
     # --- Utility Methods ---
     @classmethod
     def load(
@@ -921,15 +976,27 @@ class VelocityModel:
             self._data, filepath, format=format, dx=self._dx, dz=self._dz, order=order
         )
 
-    def plot(self, title: str = "Velocity model") -> None:
+    def plot(
+        self,
+        title: str = "Velocity model",
+        ax: Any = None,
+    ) -> Any:
         """Display the velocity model using matplotlib.
 
         Parameters
         ----------
         title : str, optional
             Title for the plot figure. Default is "Velocity model".
+        ax : matplotlib.axes.Axes, optional
+            Pre-existing Matplotlib Axes. If None, creates a new figure and axes.
+            Default is None.
+
+        Returns
+        -------
+        tuple of (matplotlib.figure.Figure, matplotlib.axes.Axes)
+            The figure and axes objects.
         """
-        quick_view(self._data, dx=self._dx, dz=self._dz, title=title)
+        return quick_view(self._data, dx=self._dx, dz=self._dz, title=title, ax=ax)
 
     # --- Statistics ---
 
