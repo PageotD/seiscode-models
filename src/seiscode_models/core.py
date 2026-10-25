@@ -163,6 +163,20 @@ class VelocityModel:
         return cls(arr, dx=dx, dz=dz)
 
     @classmethod
+    def compacted_sediments(
+        cls,
+        nx: int,
+        nz: int,
+        dx: float = 1.0,
+        dz: float = 1.0,
+        v0: float = 1500.0,
+        k: float = 0.6,
+        dtype: Union[str, np.dtype] = np.float32,
+    ) -> "VelocityModel":
+        """Create a compacted sediment model (alias for compacted)."""
+        return cls.compacted(nx=nx, nz=nz, dx=dx, dz=dz, v0=v0, k=k, dtype=dtype)
+
+    @classmethod
     def compacted(
         cls,
         nx: int = 201,
@@ -369,6 +383,28 @@ class VelocityModel:
             dtype=dtype,
         )
         return cls(arr, dx=dx, dz=dz)
+
+    @classmethod
+    def layered_model(
+        cls,
+        nx: int = 201,
+        nz: int = 51,
+        dx: float = 1.0,
+        dz: float = 1.0,
+        thicknesses: Tuple[float, ...] = (50.0, 50.0, 100.0),
+        velocities: Tuple[float, ...] = (1500.0, 2200.0, 3000.0, 4000.0),
+        dtype: Union[str, np.dtype] = np.float32,
+    ) -> "VelocityModel":
+        """Create a horizontally layered VelocityModel (alias for layered)."""
+        return cls.layered(
+            nx=nx,
+            nz=nz,
+            dx=dx,
+            dz=dz,
+            thicknesses=thicknesses,
+            velocities=velocities,
+            dtype=dtype,
+        )
 
     @classmethod
     def layered(
@@ -621,6 +657,39 @@ class VelocityModel:
 
     # --- Modifier Methods (Fluent Interface / Method Chaining) ---
 
+    def add_anomaly(
+        self,
+        cx: float,
+        cz: float,
+        sigma_x: float,
+        sigma_z: float,
+        dv: float,
+        vmin: Optional[float] = None,
+        vmax: Optional[float] = None,
+    ) -> "VelocityModel":
+        """Add a Gaussian velocity anomaly (deprecated alias for add_gaussian_anomaly).
+
+        .. deprecated:: 0.5.0
+            Use :meth:`add_gaussian_anomaly` instead.
+        """
+        import warnings
+
+        warnings.warn(
+            "'add_anomaly' is deprecated and will be removed in a future release. "
+            "Use 'add_gaussian_anomaly' instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self.add_gaussian_anomaly(
+            cx=cx,
+            cz=cz,
+            sigma_x=sigma_x,
+            sigma_z=sigma_z,
+            dv=dv,
+            vmin=vmin,
+            vmax=vmax,
+        )
+
     def add_gaussian_anomaly(
         self,
         cx: float,
@@ -740,6 +809,14 @@ class VelocityModel:
             ix_fault=ix_fault,
         )
         return self
+
+    def add_water_bottom(
+        self,
+        water_depth: Union[float, Sequence[float], np.ndarray] = 100.0,
+        v_water: float = 1500.0,
+    ) -> "VelocityModel":
+        """Impose an acoustic water layer (alias for add_water_layer)."""
+        return self.add_water_layer(water_depth=water_depth, v_water=v_water)
 
     def add_water_layer(
         self,
@@ -1009,6 +1086,22 @@ class VelocityModel:
     def vmax(self) -> float:
         """Maximum velocity in m/s."""
         return float(self._data.max())
+
+    def to_dict(self) -> dict:
+        """Return summary statistics of the velocity field (deprecated alias for stats).
+
+        .. deprecated:: 0.5.0
+            Use :meth:`stats` instead.
+        """
+        import warnings
+
+        warnings.warn(
+            "'to_dict' is deprecated and will be removed in a future release. "
+            "Use 'stats' instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self.stats()
 
     def stats(self) -> dict:
         """Return summary statistics of the velocity field."""

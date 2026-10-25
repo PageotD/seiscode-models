@@ -29,7 +29,22 @@ class TestVelocityModelOOP:
         assert model.dtype == np.float64
         assert model.data.shape == (80, 40)
 
-    def test_gaussian_anomaly(self):
+    def test_deprecated_aliases(self):
+        model = sm.VelocityModel.gradient(nx=40, nz=20)
+        with pytest.deprecated_call():
+            model.add_anomaly(cx=20, cz=10, sigma_x=5.0, sigma_z=5.0, dv=200.0)
+
+        with pytest.deprecated_call():
+            d = model.to_dict()
+            assert "vmin" in d
+
+        # Test classmethod aliases
+        m_lay = sm.VelocityModel.layered_model(nx=20, nz=10)
+        assert m_lay.nx == 20
+        m_comp = sm.VelocityModel.compacted_sediments(nx=20, nz=10)
+        assert m_comp.nx == 20
+        m_wat = m_lay.copy().add_water_bottom(water_depth=2.0)
+        assert m_wat.nx == 20
         model = sm.VelocityModel.gradient(nx=80, nz=40, dtype="f32")
         original = model.data.copy()
 
