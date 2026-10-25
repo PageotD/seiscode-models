@@ -200,6 +200,7 @@ class TestVelocityModelOOP:
             shape=(model.nx, model.nz),
             dx=1.0,
             dz=1.0,
+            order="F",
         )
 
         assert np.array_equal(model.data, loaded.data)

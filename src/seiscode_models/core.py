@@ -208,8 +208,10 @@ class VelocityModel:
         dz: float = 1.0,
         cx: Optional[float] = None,
         width: Optional[float] = None,
+        z_top: Optional[float] = None,
         v_salt: float = 4500.0,
         v_sed: float = 2500.0,
+        v_sed_bottom: Optional[float] = None,
         dtype: Union[str, np.dtype] = np.float32,
     ) -> "VelocityModel":
         """Create a VelocityModel featuring a salt dome intrusion in compacted sediments.
@@ -228,10 +230,14 @@ class VelocityModel:
             Horizontal center coordinate of dome in meters. Default is 140.0 * dx.
         width : float, optional
             Horizontal half-width of the dome in meters. Default is 40.0 * dx.
+        z_top : float, optional
+            Depth of the salt dome apex in meters.
         v_salt : float, optional
             Velocity of the salt body in m/s. Default is 4500.0.
         v_sed : float, optional
             Sediment velocity at surface in m/s. Default is 2500.0.
+        v_sed_bottom : float, optional
+            Sediment velocity at model bottom in m/s.
         dtype : str or np.dtype, optional
             Output data type. Default is np.float32.
 
@@ -247,8 +253,10 @@ class VelocityModel:
             dz=dz,
             cx=cx,
             width=width,
+            z_top=z_top,
             v_salt=v_salt,
             v_sed=v_sed,
+            v_sed_bottom=v_sed_bottom,
             dtype=dtype,
         )
         return cls(arr, dx=dx, dz=dz)
@@ -262,7 +270,7 @@ class VelocityModel:
         dz: float = 1.0,
         v: Tuple[float, ...] = (1800.0, 2400.0, 3200.0, 4200.0),
         dip_deg: float = 8.0,
-        thickness: float = 10.0,
+        thickness: Union[float, Tuple[float, ...]] = 10.0,
         dtype: Union[str, np.dtype] = np.float32,
     ) -> "VelocityModel":
         """Create a VelocityModel with dipping planar geological strata.
@@ -281,7 +289,7 @@ class VelocityModel:
             Layer velocities from top to bottom in m/s.
         dip_deg : float, optional
             Dip angle in degrees. Default is 8.0.
-        thickness : float, optional
+        thickness : float or tuple of float, optional
             Thickness of each layer in meters. Default is 10.0.
         dtype : str or np.dtype, optional
             Output data type. Default is np.float32.
@@ -619,8 +627,8 @@ class VelocityModel:
         sigma_x: float,
         sigma_z: float,
         dv: float,
-        vmin: float = 200.0,
-        vmax: float = 8000.0,
+        vmin: Optional[float] = None,
+        vmax: Optional[float] = None,
     ) -> "VelocityModel":
         """Add a Gaussian velocity anomaly in place and return self for method chaining.
 
@@ -631,15 +639,15 @@ class VelocityModel:
         cz : float
             Vertical center coordinate (depth) of the anomaly in meters.
         sigma_x : float
-            Horizontal standard deviation in meters.
+            Horizontal standard deviation in meters. Must be positive.
         sigma_z : float
-            Vertical standard deviation in meters.
+            Vertical standard deviation in meters. Must be positive.
         dv : float
             Peak velocity anomaly at center in m/s.
         vmin : float, optional
-            Lower physical velocity bound in m/s. Default is 200.0.
+            Optional lower physical velocity bound in m/s. Default is None.
         vmax : float, optional
-            Upper physical velocity bound in m/s. Default is 8000.0.
+            Optional upper physical velocity bound in m/s. Default is None.
 
         Returns
         -------
@@ -856,6 +864,7 @@ class VelocityModel:
         dtype: Union[str, np.dtype] = np.float32,
         dx: float = 1.0,
         dz: float = 1.0,
+        order: str = "C",
     ) -> "VelocityModel":
         """Load a velocity model from a raw binary (.bin) or NumPy (.npy) file.
 
@@ -871,6 +880,8 @@ class VelocityModel:
             Horizontal grid spacing in meters. Default is 1.0.
         dz : float, optional
             Vertical grid spacing in meters. Default is 1.0.
+        order : str, optional
+            Memory order for raw binary files ('C' or 'F'). Default is 'C'.
 
         Returns
         -------
@@ -879,7 +890,7 @@ class VelocityModel:
         """
         from .utils.io import load_model
 
-        arr = load_model(filepath, shape=shape, dtype=dtype)
+        arr = load_model(filepath, shape=shape, dtype=dtype, order=order)
         return cls(arr, dx=dx, dz=dz)
 
     def copy(self) -> "VelocityModel":

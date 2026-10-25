@@ -58,11 +58,13 @@ def export_model(
     filepath.parent.mkdir(parents=True, exist_ok=True)
 
     fmt = format.lower()
+    ord_clean = order.upper()
+    if ord_clean not in ("C", "F"):
+        raise ValueError(f"Unsupported memory order: '{order}'. Use 'C' or 'F'.")
+
     if fmt in ("bin", "raw"):
-        if order.upper() == "F":
-            np.asfortranarray(v).tofile(filepath)
-        else:
-            v.tofile(filepath)
+        with open(filepath, "wb") as f:
+            f.write(v.tobytes(order=ord_clean))
     elif fmt == "npy":
         if filepath.suffix != ".npy":
             filepath = filepath.with_suffix(".npy")
@@ -77,6 +79,7 @@ def load_model(
     filepath: Union[str, Path],
     shape: Optional[Tuple[int, int]] = None,
     dtype: Union[str, np.dtype] = np.float32,
+    order: str = "C",
 ) -> np.ndarray:
     """Load a 2D velocity model from a raw binary or NumPy (.npy) file.
 
@@ -89,6 +92,9 @@ def load_model(
         optional for NumPy `.npy` files.
     dtype : str or np.dtype, optional
         Floating-point data type expected in the raw binary file. Default is np.float32.
+    order : str, optional
+        Memory order for raw binary file ('C' for row-major, 'F' for column-major).
+        Default is 'C'. Ignored for 'npy' format.
 
     Returns
     -------
@@ -98,7 +104,8 @@ def load_model(
     Raises
     ------
     ValueError
-        If `shape` is missing for raw binary, or if file size does not match expected elements.
+        If `shape` is missing for raw binary, or if file size does not match expected elements,
+        or if `order` is not 'C' or 'F'.
 
     Examples
     --------
@@ -112,10 +119,15 @@ def load_model(
         return np.load(filepath)
     if shape is None:
         raise ValueError("Shape must be provided for raw binary files.")
+
+    ord_clean = order.upper()
+    if ord_clean not in ("C", "F"):
+        raise ValueError(f"Unsupported memory order: '{order}'. Use 'C' or 'F'.")
+
     v = np.fromfile(filepath, dtype=dtype)
     expected_size = shape[0] * shape[1]
     if v.size != expected_size:
         raise ValueError(
             f"File size mismatch: expected {expected_size} elements for shape {shape}, got {v.size}."
         )
-    return v.reshape(shape)
+    return v.reshape(shape, order=ord_clean)

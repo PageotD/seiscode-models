@@ -25,16 +25,15 @@ from .utils.validation import validate_model
 from .utils.visualization import quick_view
 
 try:
-    from importlib.metadata import PackageNotFoundError, version
+    from importlib.metadata import version
 except ImportError:  # Python3.8
-    from importlib_metadata import PackageNotFoundError, version
+    from importlib_metadata import version
 
 try:
     __version__ = version("seiscode-models")
-except PackageNotFoundError as err:
-    raise RuntimeError(
-        "seiscode-models package is not installed. Please install it to use this module."
-    ) from err
+except Exception:
+    # Package is not installed (e.g., imported directly from repository source tree)
+    __version__ = "0.0.0.dev0"
 
 
 __all__ = [
