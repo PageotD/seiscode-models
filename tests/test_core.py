@@ -250,3 +250,35 @@ class TestVelocityModelOOP:
         assert model.nx == 50
         assert model.nz == 40
         assert model.data.shape == (50, 40)
+
+    def test_unpad(self):
+        orig = sm.VelocityModel.gradient(nx=30, nz=20, dx=5.0, dz=5.0)
+        model = orig.copy()
+        model.pad_boundaries(npad=10, mode="edge")
+        assert model.nx == 50 and model.nz == 40
+        model.unpad(npad=10)
+        assert model.nx == 30 and model.nz == 20
+        assert model == orig
+
+    def test_unpad_asymmetric(self):
+        orig = sm.VelocityModel.gradient(nx=30, nz=20, dx=5.0, dz=5.0)
+        model = orig.copy()
+        # pad x: 5 left, 10 right; pad z: 3 top, 7 bottom
+        model.pad_boundaries(npad=((5, 10), (3, 7)), mode="edge")
+        assert model.nx == 45 and model.nz == 30
+        model.unpad(npad=((5, 10), (3, 7)))
+        assert model == orig
+
+    def test_unpad_invalid(self):
+        model = sm.VelocityModel.gradient(nx=10, nz=10)
+        with pytest.raises(ValueError, match="Padding .* exceeds model shape"):
+            model.unpad(npad=10)
+        with pytest.raises(ValueError, match="Padding values must be non-negative"):
+            model.unpad(npad=-1)
+
+    def test_data_defensive_copy(self):
+        arr = np.full((10, 10), 2000.0, dtype=np.float32)
+        model = sm.VelocityModel(arr)
+        arr[0, 0] = 5000.0
+        # Mutation of external array must not affect model._data
+        assert model.data[0, 0] == 2000.0
