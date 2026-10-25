@@ -120,3 +120,39 @@ class TestGeologicalModels:
             water_depth=25.0
         )
         assert np.all(model.data[:, :5] == 1500.0)
+
+    def test_dipping_layers_thickness_uniform(self):
+        # 3 layers of constant thickness 20m at 0 dip
+        v = sm.dipping_layers(
+            nx=20,
+            nz=50,
+            dx=2.0,
+            dz=2.0,
+            v=(1000.0, 2000.0, 3000.0, 4000.0),
+            dip_deg=0.0,
+            thickness=20.0,
+        )
+        # 20m / 2m = 10 cells per layer
+        assert v[0, 5] == 1000.0
+        assert v[0, 15] == 2000.0
+        assert v[0, 25] == 3000.0
+        assert v[0, 35] == 4000.0
+
+    def test_salt_dome_custom_apex_and_gradient(self):
+        v = sm.salt_dome(
+            nx=100,
+            nz=60,
+            dx=5.0,
+            dz=5.0,
+            cx=250.0,
+            width=50.0,
+            z_top=100.0,
+            v_salt=4500.0,
+            v_sed=2000.0,
+            v_sed_bottom=3000.0,
+        )
+        assert v.shape == (100, 60)
+        # Above apex z_top=100m (row < 20), no salt at cx=250m (col 50)
+        assert v[50, 10] < 4500.0
+        # Inside the dome below apex, salt is present
+        assert v[50, 40] == 4500.0

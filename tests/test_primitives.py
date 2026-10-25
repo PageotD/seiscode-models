@@ -28,6 +28,18 @@ class TestAddGaussianAnomaly:
         assert v_out.dtype == np.float64
         assert v_out.shape == (40, 40)
 
+    def test_no_unwanted_clipping(self):
+        # Background above standard 8000 m/s should NOT be clipped unless explicitly asked
+        v = np.full((20, 20), 9000.0, dtype=np.float32)
+        v_out = sm.add_gaussian_anomaly(v, 10, 10, 2.0, 2.0, 500.0)
+        assert v_out[0, 0] == 9000.0
+        assert v_out[10, 10] == 9500.0
+
+    def test_invalid_sigma_raises(self):
+        v = np.full((20, 20), 2000.0, dtype=np.float32)
+        with pytest.raises(ValueError, match="sigma_x and sigma_z must be positive"):
+            sm.add_gaussian_anomaly(v, 10, 10, 0.0, 2.0, 500.0)
+
 
 class TestAddEllipticalAnomaly:
     def test_elliptical_anomaly(self):

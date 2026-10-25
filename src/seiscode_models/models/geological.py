@@ -15,7 +15,7 @@ def dipping_layers(
     dz: float = 1.0,
     v: Sequence[float] = (1800.0, 2400.0, 3200.0, 4200.0),
     dip_deg: float = 8.0,
-    thickness: float = 10.0,
+    thickness: Union[float, Sequence[float]] = 10.0,
     dtype: Union[str, np.dtype] = np.float32,
 ) -> np.ndarray:
     """Generate dipping planar layers with a uniform dip angle.
@@ -38,8 +38,9 @@ def dipping_layers(
         Layer velocities from top to bottom in m/s. Default is (1800.0, 2400.0, 3200.0, 4200.0).
     dip_deg : float, optional
         Dip angle in degrees (positive dips downward towards increasing x). Default is 8.0.
-    thickness : float, optional
-        Perpendicular or vertical layer thickness in meters. Default is 10.0.
+    thickness : float or sequence of float, optional
+        Layer thickness in meters. If a scalar is provided, each layer has identical
+        thickness. If a sequence is provided, its length must be `len(v) - 1`. Default is 10.0.
     dtype : str or np.dtype, optional
         Output NumPy floating-point precision ('f32', 'f64', np.float32, np.float64).
         Default is np.float32.
@@ -52,7 +53,7 @@ def dipping_layers(
     Raises
     ------
     ValueError
-        If `dx` or `dz` are not strictly positive.
+        If `dx` or `dz` are not strictly positive, or if sequence thickness length is invalid.
 
     Examples
     --------
@@ -65,9 +66,22 @@ def dipping_layers(
         raise ValueError("Grid spacing dx and dz must be positive.")
     dt = parse_dtype(dtype)
     v_arr = np.asarray(v, dtype=dt)
+    if v_arr.size < 2:
+        raise ValueError(f"'v' must have at least 2 layers, got {len(v)}.")
+
+    n_layers = v_arr.size - 1
+    if np.isscalar(thickness):
+        thicknesses = np.full(n_layers, float(thickness), dtype=dt)
+    else:
+        thicknesses = np.asarray(thickness, dtype=dt)
+        if thicknesses.size != n_layers:
+            raise ValueError(
+                f"Expected thickness sequence of length {n_layers}, got {thicknesses.size}."
+            )
+
     x = np.arange(nx, dtype=dt) * dx
     dip = np.tan(np.deg2rad(dip_deg))
-    depths = np.cumsum(np.arange(1, v_arr.size) * thickness).astype(dt)
+    depths = np.cumsum(thicknesses).astype(dt)
     k_int = np.clip(
         ((depths[:, None] + (x - x.mean()) * dip) / dz).astype(int), 0, nz - 1
     )
@@ -321,8 +335,10 @@ def salt_dome(
     dz: float = 1.0,
     cx: Optional[float] = None,
     width: Optional[float] = None,
+    z_top: Optional[float] = None,
     v_salt: float = 4500.0,
     v_sed: float = 2500.0,
+    v_sed_bottom: Optional[float] = None,
     dtype: Union[str, np.dtype] = np.float32,
 ) -> np.ndarray:
     """Generate a realistic salt dome intrusion embedded in compacted sediments.
@@ -344,10 +360,14 @@ def salt_dome(
         Horizontal center position of the salt dome in meters. Default is ``140.0 * dx``.
     width : float, optional
         Horizontal half-width (semi-axis) of the salt body in meters. Default is ``40.0 * dx``.
+    z_top : float, optional
+        Depth of the apex of the salt dome in meters. If None, defaults to 10% of model depth (``0.1 * nz * dz``).
     v_salt : float, optional
         Constant velocity inside the salt dome in m/s. Default is 4500.0.
     v_sed : float, optional
-        Sediment velocity at the surface in m/s (increases with depth to 4000 m/s). Default is 2500.0.
+        Sediment velocity at the surface in m/s. Default is 2500.0.
+    v_sed_bottom : float, optional
+        Sediment velocity at model bottom in m/s. Default is ``max(v_sed, 4000.0)``.
     dtype : str or np.dtype, optional
         Output NumPy floating-point precision ('f32', 'f64', np.float32, np.float64).
         Default is np.float32.
@@ -365,31 +385,30 @@ def salt_dome(
     Examples
     --------
     >>> import seiscode_models as sm
-    >>> v = sm.salt_dome(nx=200, nz=80, dx=10.0, dz=10.0, cx=1000.0, width=300.0)
+    >>> v = sm.salt_dome(nx=200, nz=80, dx=10.0, dz=10.0, cx=1000.0, width=300.0, z_top=200.0)
     >>> v.shape
     (200, 80)
     """
     if dx <= 0 or dz <= 0:
         raise ValueError("Grid spacing dx and dz must be positive.")
     dt = parse_dtype(dtype)
-    v = gradient_background(nx, nz, dx=dx, dz=dz, v0=v_sed, v1=4000.0, dtype=dt)
 
-    center_x = float(
-        cx * dx
-        if cx is not None and cx < nx
-        else (cx if cx is not None else 140.0 * dx)
-    )
-    semi_width = float(
-        width * dx
-        if width is not None and width < nx
-        else (width if width is not None else 40.0 * dx)
-    )
+    v1 = float(v_sed_bottom) if v_sed_bottom is not None else max(v_sed, 4000.0)
+    v = gradient_background(nx, nz, dx=dx, dz=dz, v0=v_sed, v1=v1, dtype=dt)
+
+    center_x = float(cx) if cx is not None else 140.0 * dx
+    semi_width = float(width) if width is not None else 40.0 * dx
+
+    total_depth = nz * dz
+    apex_depth = float(z_top) if z_top is not None else 0.1 * total_depth
+    height = max(total_depth - apex_depth, dz)
 
     x = (np.arange(nx, dtype=dt) * dx)[:, None]
     z = (np.arange(nz, dtype=dt) * dz)[None, :]
-    z_max = nz * dz * 0.9
 
-    r = ((x - center_x) / semi_width) ** 2 + np.clip((z_max - z) / z_max, 0, None) ** 2
+    r = ((x - center_x) / semi_width) ** 2 + np.clip(
+        (total_depth - z) / height, 0.0, None
+    ) ** 2
     v[r < 1.0] = v_salt
     return v
 

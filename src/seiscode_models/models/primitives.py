@@ -78,8 +78,8 @@ def add_gaussian_anomaly(
     dv: float,
     dx: float = 1.0,
     dz: float = 1.0,
-    vmin: float = 200.0,
-    vmax: float = 8000.0,
+    vmin: Optional[float] = None,
+    vmax: Optional[float] = None,
 ) -> np.ndarray:
     r"""Add a smooth 2D Gaussian velocity perturbation to an existing model.
 
@@ -91,7 +91,7 @@ def add_gaussian_anomaly(
         \Delta v(x, z) = dv \cdot \exp\left( - \left[ \frac{(x - c_x)^2}{2\sigma_x^2}
         + \frac{(z - c_z)^2}{2\sigma_z^2} \right] \right)
 
-    Velocities are subsequently clipped to the physical interval :math:`[v_{\min}, v_{\max}]`.
+    If `vmin` or `vmax` are provided, velocities are subsequently clipped to the specified bounds.
 
     Parameters
     ----------
@@ -102,9 +102,9 @@ def add_gaussian_anomaly(
     cz : float
         Center coordinate along vertical axis in meters (or cells if dz=1).
     sigma_x : float
-        Gaussian standard deviation (half-width) along x in meters (or cells).
+        Gaussian standard deviation (half-width) along x in meters (or cells). Must be strictly positive.
     sigma_z : float
-        Gaussian standard deviation (half-width) along z in meters (or cells).
+        Gaussian standard deviation (half-width) along z in meters (or cells). Must be strictly positive.
     dv : float
         Peak velocity perturbation amplitude at the center in m/s (can be positive or negative).
     dx : float, optional
@@ -112,9 +112,9 @@ def add_gaussian_anomaly(
     dz : float, optional
         Vertical grid spacing in meters. Default is 1.0.
     vmin : float, optional
-        Lower physical velocity clamp in m/s. Default is 200.0.
+        Optional lower physical velocity clamp in m/s. Default is None (no lower clipping).
     vmax : float, optional
-        Upper physical velocity clamp in m/s. Default is 8000.0.
+        Optional upper physical velocity clamp in m/s. Default is None (no upper clipping).
 
     Returns
     -------
@@ -124,7 +124,7 @@ def add_gaussian_anomaly(
     Raises
     ------
     ValueError
-        If `dx` or `dz` are not strictly positive.
+        If `dx` or `dz` are not strictly positive, or if `sigma_x` or `sigma_z` are <= 0.
 
     Examples
     --------
@@ -136,6 +136,11 @@ def add_gaussian_anomaly(
     """
     if dx <= 0 or dz <= 0:
         raise ValueError("Grid spacing dx and dz must be positive.")
+    if sigma_x <= 0 or sigma_z <= 0:
+        raise ValueError(
+            f"Gaussian anomaly sigma_x and sigma_z must be positive, got sigma_x={sigma_x}, sigma_z={sigma_z}."
+        )
+
     nx, nz = v.shape
     dt = v.dtype
     x = (np.arange(nx, dtype=dt) * dx)[:, None]
@@ -143,7 +148,14 @@ def add_gaussian_anomaly(
     g = dv * np.exp(
         -((x - cx) ** 2 / (2 * sigma_x**2) + (z - cz) ** 2 / (2 * sigma_z**2))
     )
-    return np.clip(v + g, vmin, vmax).astype(dt)
+
+    out = v + g
+    if vmin is not None or vmax is not None:
+        low = vmin if vmin is not None else -np.inf
+        high = vmax if vmax is not None else np.inf
+        out = np.clip(out, low, high)
+
+    return out.astype(dt)
 
 
 def add_fault_offset(
