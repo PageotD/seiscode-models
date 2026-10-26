@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 
 
+## [0.5.1] - 2026-10-26
+
+
+### Documentation
+
+- synchronize README examples, add docstring (#24) ([a942c96](https://github.com/OWNER/REPO/commit/a942c96d547c6f69f2c0e3005070cad20e74d85b))
+
+
+
+### Fixed
+
+- critical bugs and fortran order (#22) ([8b77f96](https://github.com/OWNER/REPO/commit/8b77f96f0ffeb138287b107cb2c1b2fb5e803be0))
+
+
+- strengthen model validation, prevent aliasing, and refine grid utilities (#23) ([12e36a0](https://github.com/OWNER/REPO/commit/12e36a09f142025b66874cee6a639325cd09fde7))
+
+
+
 ## [0.5.0] - 2026-10-17
 
 
@@ -24,6 +42,12 @@ All notable changes to this project will be documented in this file.
 ### Documentation
 
 - complete english docstrings (#19) ([5a07341](https://github.com/OWNER/REPO/commit/5a07341f06f4458959a94cbe3d2d03eb47ac4ff9))
+
+
+
+### Maintenance
+
+- seiscode-models-0.5.0 ([d4db625](https://github.com/OWNER/REPO/commit/d4db62541a2b2b4c29c881fa1fe4d43b6c680b23))
 
 
 
