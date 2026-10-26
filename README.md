@@ -58,11 +58,11 @@ model = VelocityModel.gradient(
 )
 
 # Add a positive Gaussian velocity anomaly.
-model.add_anomaly(
-    cx=100,
-    cz=50,
-    sigma_x=15,
-    sigma_z=10,
+model.add_gaussian_anomaly(
+    cx=1000.0,
+    cz=500.0,
+    sigma_x=150.0,
+    sigma_z=100.0,
     dv=1000.0,
 )
 
@@ -79,7 +79,7 @@ model.export("velocity_model.npy", format="npy")
 
 The resulting velocity field is a NumPy array with shape `(nx, nz)`. Velocity values are expressed in meters per second, while `dx` and `dz` represent grid spacing in meters.
 
-The anomaly coordinates and standard deviations are specified in grid cells, not physical distances.
+All coordinates (`cx`, `cz`), dimensions, and standard deviations (`sigma_x`, `sigma_z`) are expressed in physical meters.
 
 ## Generating geological models
 
@@ -143,16 +143,16 @@ model = VelocityModel.faulted_layers(
     nz=101,
     dx=10.0,
     dz=10.0,
-    ix_fault=120,
-    throw=8,
+    x_fault=1200.0,
+    throw=80.0,
     v=(1800.0, 2400.0, 3200.0, 4200.0),
 )
 
 model.plot(title="Faulted Geological Layers")
 ```
 
-- `ix_fault`: Horizontal grid index of the fault.
-- `throw`: Vertical displacement in grid cells.
+- `x_fault`: Horizontal fault position in meters (or `ix_fault` in grid cells).
+- `throw`: Vertical displacement in meters.
 - `v`: Sequence of layer velocities in m/s.
 
 ### Salt dome
@@ -165,8 +165,8 @@ model = VelocityModel.salt_dome(
     nz=101,
     dx=10.0,
     dz=10.0,
-    cx=140,
-    width=40.0,
+    cx=1400.0,
+    width=400.0,
     v_salt=4500.0,
     v_sed=2500.0,
 )
@@ -174,7 +174,7 @@ model = VelocityModel.salt_dome(
 model.plot(title="Salt Dome")
 ```
 
-The dome's horizontal position is controlled by `cx`, and its approximate width by `width`. The velocities of the salt and surrounding sediments are configurable.
+The dome's horizontal center is controlled by `cx` in meters (default 140 * dx), and its width by `width` in meters. The velocities of the salt and surrounding sediments are configurable.
 
 ### Sinusoidal interface
 
@@ -225,16 +225,16 @@ model = VelocityModel.low_velocity_layer(
     nz=101,
     dx=10.0,
     dz=10.0,
-    k0=30,
-    thickness=8,
+    z0=300.0,
+    thickness=80.0,
     v_slow=1200.0,
 )
 
 model.plot(title="Buried Low-Velocity Layer")
 ```
 
-- `k0`: Starting vertical grid index of the low-velocity layer.
-- `thickness`: Layer thickness in grid cells.
+- `z0`: Starting depth of the low-velocity layer in meters (or `k0` in grid cells).
+- `thickness`: Layer thickness in meters.
 - `v_slow`: Velocity within the layer, in m/s.
 
 ### Heterogeneous anomaly model
@@ -264,55 +264,55 @@ The `VelocityModel` class provides methods for modifying velocity fields in plac
 Use `add_gaussian_anomaly()` to introduce a localized positive or negative velocity perturbation.
 
 ```python
-model = VelocityModel.gradient(nx=201, nz=101)
+model = VelocityModel.gradient(nx=201, nz=101, dx=10.0, dz=10.0)
 
 model.add_gaussian_anomaly(
-    cx=100,
-    cz=50,
-    sigma_x=15,
-    sigma_z=10,
+    cx=1000.0,
+    cz=500.0,
+    sigma_x=150.0,
+    sigma_z=100.0,
     dv=-500.0,
 )
 ```
 
 Parameters:
 
-- `cx`, `cz`: Anomaly center in grid cells.
-- `sigma_x`, `sigma_z`: Gaussian standard deviations in grid cells.
+- `cx`, `cz`: Anomaly center in meters.
+- `sigma_x`, `sigma_z`: Gaussian standard deviations in meters.
 - `dv`: Velocity perturbation at the anomaly center, in m/s.
-- `vmin`, `vmax`: Minimum and maximum allowed velocities.
+- `vmin`, `vmax`: Optional lower and upper physical velocity clamps.
 
 ### Add an elliptical inclusion
 Use `add_elliptical_inclusion()` to introduce a localized velocity inclusion.
 
 ```python
-model = VelocityModel.gradient(nx=201, nz=101)
+model = VelocityModel.gradient(nx=201, nz=101, dx=10.0, dz=10.0)
 
 model.add_elliptical_inclusion(
-    cx=100,
-    cz=50,
-    radius_x=15.0,
-    radius_z=10.0,
-    cv=200.0,
+    cx=1000.0,
+    cz=500.0,
+    radius_x=150.0,
+    radius_z=100.0,
+    cv=2000.0,
 )
 ```
 
 Parameters:
 
-- `cx`, `cz`: Anomaly center in grid cells.
-- `radius_x`, `radius_z`: Radius along x and z axis.
-- `cv`: (constant) Velocity of the inclusion in m/s.
+- `cx`, `cz`: Inclusion center in meters.
+- `radius_x`, `radius_z`: Semi-axis radii in meters along x and z.
+- `cv`: Constant velocity of the inclusion in m/s.
 
 ### Apply a fault offset
 
 ```python
 model.add_fault(
-    ix_fault=100,
-    throw=8,
+    x_fault=1000.0,
+    throw=80.0,
 )
 ```
 
-This applies a vertical displacement to the velocity field across the specified fault index.
+This applies a vertical displacement to the velocity field across the specified fault position in meters (or `ix_fault` in grid cells).
 
 ### Clip velocity values
 
@@ -347,11 +347,11 @@ model = (
         dx=10.0,
         dz=10.0,
     )
-    .add_anomaly(
-        cx=100,
-        cz=50,
-        sigma_x=12,
-        sigma_z=8,
+    .add_gaussian_anomaly(
+        cx=1000.0,
+        cz=500.0,
+        sigma_x=120.0,
+        sigma_z=80.0,
         dv=800.0,
     )
     .clip(vmin=500.0, vmax=6000.0)
@@ -528,20 +528,27 @@ The package exposes its principal classes and functions directly from `seiscode_
 | `VelocityModel.checkerboard()` | Checkerboard pattern for resolution tests |
 | `VelocityModel.low_velocity_layer()` | Buried low-velocity layer |
 | `VelocityModel.heterogeneous_anomaly_model()` | Heterogeneous model with synthetic anomalies |
+| `VelocityModel.layered_model()` / `.layered()` | Horizontally layered geological strata |
+| `VelocityModel.compacted_sediments()` / `.compacted()` | Exponentially compacted sedimentary basin |
 
 ### Model operations
 
 | API | Description |
 |---|---|
-| `model.add_anomaly()` | Add a Gaussian velocity anomaly |
-| `model.add_fault()` | Apply a fault offset |
+| `model.add_gaussian_anomaly()` | Add a Gaussian velocity anomaly (physical coords in meters) |
+| `model.add_elliptical_inclusion()` | Add an elliptical constant velocity body |
+| `model.add_fault()` | Apply a fault offset (meters or cell index) |
+| `model.add_water_layer()` / `.add_water_bottom()` | Impose an acoustic water layer / bathymetry |
 | `model.clip()` | Clip velocities to specified bounds |
-| `model.smooth()` | Smooth the velocity field |
-| `model.copy()` | Create an independent copy of the model |
-| `model.plot()` | Visualize the velocity field |
-| `model.export()` | Export the velocity field to a file |
+| `model.smooth()` | Smooth the velocity field with a moving-average filter |
+| `model.pad_boundaries()` | Pad model boundaries for absorbing layers (PML/sponge) |
+| `model.unpad()` | Remove boundary padding to recover inner physical model |
+| `model.cfl_dt()` | Estimate maximum stable time step under CFL condition |
+| `model.copy()` | Create an independent deep copy of the model |
+| `model.plot()` | Visualize the velocity field (supports custom Matplotlib `ax`) |
+| `model.export()` | Export the velocity field to a file (C or Fortran order) |
 | `VelocityModel.load()` | Load a model from a supported file |
-| `model.stats()` | Return summary statistics |
+| `model.stats()` | Return summary statistics dictionary |
 
 ### Additional public functions
 
@@ -555,6 +562,9 @@ The following functions are also available from the package's top-level namespac
 | `dipping_layers()` | Generate dipping layers |
 | `sinusoidal_interface()` | Generate a sinusoidal interface |
 | `faulted_layers()` | Generate faulted geological layers |
+| `layered_model()` | Generate horizontally layered strata |
+| `compacted_sediments()` | Generate exponentially compacted sediment velocity |
+| `add_water_bottom()` | Impose an acoustic water layer on top of a model |
 | `checkerboard()` | Generate a checkerboard model |
 | `salt_dome()` | Generate a salt dome |
 | `low_velocity_layer()` | Generate a buried low-velocity layer |
